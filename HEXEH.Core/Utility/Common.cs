@@ -37,8 +37,8 @@ namespace HEXEH.Core.Utility
             val -= val switch
             {
                 > 47 and < 58 => 48,
-                > 64 and < 91 => 55,
-                > 96 and < 123 => 87,
+                > 64 and < 71 => 55,
+                > 96 and < 103 => 87,
                 _ => throw new InvalidDataException($"{h} is not a valid byte char"),
             };
             return val;

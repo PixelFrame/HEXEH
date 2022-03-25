@@ -16,15 +16,23 @@ namespace HEXEH.Core.DataType
         public string FormattedHex { get => _formattedHex; }
         public string FormattedChars { get => _formattedChars; }
 
-        public byte[] Blob { get; set; } = Array.Empty<byte>();
+        private byte[] _blob = Array.Empty<byte>();
+        public byte[] Blob
+        {
+            get => _blob;
+            set
+            {
+                _blob = value;
+                DoConvertFromBytes(16);
+            }
+        }
 
         public HexDump(byte[] blob)
         {
             Blob = blob;
-            DoConvertFromBytes(16);
         }
 
-        private void DoConvertFromBytes(uint step)
+        private void DoConvertFromBytes(uint lineLength)
         {
             StringBuilder line = new();
             StringBuilder hex = new();
@@ -36,7 +44,7 @@ namespace HEXEH.Core.DataType
                 hex.Append(b.ToString("X2"));
                 if (b < 0x20 || (b > 0x7e && b < 0xA0)) chars.Append('.');
                 else chars.Append((char)b);
-                if (count % step == 0)
+                if (count % lineLength == 0)
                 {
                     hex.Append('\n');
                     line.Append('\n');
@@ -72,5 +80,10 @@ namespace HEXEH.Core.DataType
         {
             throw new NotImplementedException();
         }
+
+        public static Dictionary<string, List<string>?>? SettingMap { get; } = new Dictionary<string, List<string>?>() 
+        {
+            {"LineLength#uint#1", null }
+        };
     }
 }

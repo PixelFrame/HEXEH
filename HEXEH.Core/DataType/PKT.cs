@@ -13,25 +13,45 @@ namespace HEXEH.Core.DataType
     {
         public static string Name { get; } = "PKT";
         public static string Description { get; } = "DFS NamespaceV1 Metadata";
-        public byte[] Blob { get; set; } = Array.Empty<byte>();
+        
+        private byte[] _blob = Array.Empty<byte>();
+        public byte[] Blob
+        {
+            get=> _blob;
+            set
+            {
+                _blob = value;
+                SetData();
+            }
+        }
 
         private DFSNamespace _dfsNamespace;
 
         public static PKT ConvertFromBytes(byte[] blob)
         {
-            var newObj = new PKT();
-            newObj.Blob = blob;
-            var handle = GCHandle.Alloc(blob, GCHandleType.Pinned);
+            var newObj = new PKT
+            {
+                Blob = blob
+            };
+            return newObj;
+        }
+
+        private void SetData()
+        {
+            var handle = GCHandle.Alloc(Blob, GCHandleType.Pinned);
             try
             {
                 var dfsMarshaler = new DFSNamespaceMarshaler();
-                newObj._dfsNamespace = (DFSNamespace)dfsMarshaler.MarshalNativeToManaged(handle.AddrOfPinnedObject());
+                _dfsNamespace = (DFSNamespace)dfsMarshaler.MarshalNativeToManaged(handle.AddrOfPinnedObject());
             }
-            catch
+            catch(Exception ex)
+            {
+                throw new InvalidDataException("Blob provided cannot be set converted to PKT structure", ex);
+            }
+            finally
             {
                 handle.Free();
             }
-            return newObj;
         }
 
         IDataType IDataType.ConvertFromBytes(byte[] blob)
@@ -44,6 +64,90 @@ namespace HEXEH.Core.DataType
             return ConvertFromBytes(blob);
         }
 
+        public DataTree ToDataTree()
+        {
+            var tree = new DataTree(Name, Description);
+            tree.Head.Childs.Add(new DataTreeNode("Version", _dfsNamespace.Version.ToString()));
+            tree.Head.Childs.Add(new DataTreeNode("ElementCount", _dfsNamespace.ElementCount.ToString()));
+
+            foreach (var ele in _dfsNamespace.Elements)
+            {
+                var eleTree = new DataTreeNode("DFSNamespaceElement", "");
+                tree.Head.Childs.Add(eleTree);
+
+                eleTree.Childs.Add(new DataTreeNode("NameSize", ele.NameSize.ToString()));
+                eleTree.Childs.Add(new DataTreeNode("Name", ele.Name));
+                eleTree.Childs.Add(new DataTreeNode("DataSize", ele.DataSize.ToString()));
+                if (ele.Name == @"\siteroot")
+                {
+                    var siTree = new DataTreeNode("SiteInformation", "");
+                    eleTree.Childs.Add(siTree);
+                    siTree.Childs.Add(new DataTreeNode("SiteTableGuid", ele.DataSite.SiteTableGuid.ToString()));
+                    siTree.Childs.Add(new DataTreeNode("SiteEntryCount", ele.DataSite.SiteEntryCount.ToString()));
+                    foreach (var se in ele.DataSite.SiteEntries)
+                    {
+                        var seTree = new DataTreeNode("SiteEntry", "");
+                        siTree.Childs.Add(seTree);
+                        seTree.Childs.Add(new DataTreeNode("ServerNameSize", se.ServerNameSize.ToString()));
+                        seTree.Childs.Add(new DataTreeNode("ServerName", se.ServerName));
+                        seTree.Childs.Add(new DataTreeNode("SiteNameInfoCount", se.SiteNameInfoCount.ToString()));
+                        foreach (var sni in se.SiteNames)
+                        {
+                            var sniTree = new DataTreeNode("SiteNameInfo", "");
+                            seTree.Childs.Add(sniTree);
+                            sniTree.Childs.Add(new DataTreeNode("Flags", sni.Flags.ToString()));
+                            sniTree.Childs.Add(new DataTreeNode("SiteNameSize", sni.SiteNameSize.ToString()));
+                            sniTree.Childs.Add(new DataTreeNode("SiteName", sni.SiteName));
+                        }
+                    }
+                }
+                else
+                {
+                    var linkTree = new DataTreeNode("DFSNamespaceRootOrLink", "");
+                    eleTree.Childs.Add(linkTree);
+                    linkTree.Childs.Add(new DataTreeNode("RootOrLinkGuid", ele.DataRootOrLink.RootOrLinkGuid.ToString()));
+                    linkTree.Childs.Add(new DataTreeNode("PrefixSize", ele.DataRootOrLink.PrefixSize.ToString()));
+                    linkTree.Childs.Add(new DataTreeNode("Prefix", ele.DataRootOrLink.Prefix));
+                    linkTree.Childs.Add(new DataTreeNode("ShortPrefixSize", ele.DataRootOrLink.ShortPrefixSize.ToString()));
+                    linkTree.Childs.Add(new DataTreeNode("ShortPrefix", ele.DataRootOrLink.ShortPrefix));
+                    linkTree.Childs.Add(new DataTreeNode("RootOrLinkType", ele.DataRootOrLink.Type.ToString()));
+                    linkTree.Childs.Add(new DataTreeNode("RootOrLinkState", ele.DataRootOrLink.State.ToString()));
+                    linkTree.Childs.Add(new DataTreeNode("CommentSize", ele.DataRootOrLink.CommentSize.ToString()));
+                    linkTree.Childs.Add(new DataTreeNode("Comment", ele.DataRootOrLink.Comment));
+                    linkTree.Childs.Add(new DataTreeNode("PrefixTimeStamp", ele.DataRootOrLink.PrefixTimeStamp.ToString()));
+                    linkTree.Childs.Add(new DataTreeNode("StateTimeStamp", ele.DataRootOrLink.StateTimeStamp.ToString()));
+                    linkTree.Childs.Add(new DataTreeNode("CommentTimeStamp", ele.DataRootOrLink.CommentTimeStamp.ToString()));
+                    linkTree.Childs.Add(new DataTreeNode("Version", ele.DataRootOrLink.Version.ToString()));
+                    linkTree.Childs.Add(new DataTreeNode("TargetListSize", ele.DataRootOrLink.TargetListSize.ToString()));
+                    var tlTree = new DataTreeNode("TargetList", "");
+                    linkTree.Childs.Add(tlTree);
+                    tlTree.Childs.Add(new DataTreeNode("TargetCount", ele.DataRootOrLink.Targets.TargetCount.ToString()));
+                    foreach (var te in ele.DataRootOrLink.Targets.TargetEntries)
+                    {
+                        var teTree = new DataTreeNode("TargetEntry", "");
+                        tlTree.Childs.Add(teTree);
+                        teTree.Childs.Add(new DataTreeNode("TargetEntrySize", te.TargetEntrySize.ToString()));
+                        teTree.Childs.Add(new DataTreeNode("TargetTimeStamp", te.TargetTimeStamp.ToString()));
+                        teTree.Childs.Add(new DataTreeNode("TargetState", te.State.ToString()));
+                        teTree.Childs.Add(new DataTreeNode("TargetType", te.TargetType.ToString()));
+                        teTree.Childs.Add(new DataTreeNode("ServerNameSize", te.ServerNameSize.ToString()));
+                        teTree.Childs.Add(new DataTreeNode("ServerName", te.ServerName));
+                        teTree.Childs.Add(new DataTreeNode("ShareNameSize", te.ShareNameSize.ToString()));
+                        teTree.Childs.Add(new DataTreeNode("ShareName", te.ShareName));
+                    }
+
+                    linkTree.Childs.Add(new DataTreeNode("ReservedBlobSize", ele.DataRootOrLink.ReservedBlobSize.ToString()));
+                    linkTree.Childs.Add(new DataTreeNode("ReservedBlob", ele.DataRootOrLink.ReservedBlob.ToString()));
+                    linkTree.Childs.Add(new DataTreeNode("ReferralTTL", ele.DataRootOrLink.ReferralTTL.ToString()));
+                }
+            }
+
+            return tree;
+        }
+
+        public static Dictionary<string, List<string>?>? SettingMap { get; } = null;
+
+        #region PKT structs
         [StructLayout(LayoutKind.Sequential)]
         private struct DFSNamespace
         {
@@ -130,6 +234,10 @@ namespace HEXEH.Core.DataType
             public string SiteName;
         }
 
+        #endregion
+
+        #region PKT flags
+
         [Flags()]
         private enum RootOrLinkType
         {
@@ -168,6 +276,10 @@ namespace HEXEH.Core.DataType
             DFS_TARGET_PRIORITY_CLASS_SITE_COST_LOW = 0x3,
             DFS_TARGET_PRIORITY_CLASS_GLOBAL_LOW = 0x4
         }
+
+        #endregion
+
+        #region Marshalers
 
 #pragma warning disable CS8605 // Unboxing a possibly null value.
         private class DFSNamespaceMarshaler : ICustomMarshaler
@@ -515,85 +627,7 @@ namespace HEXEH.Core.DataType
         }
 #pragma warning restore CS8605 // Unboxing a possibly null value.
 
-        public DataTree ToDataTree()
-        {
-            var tree = new DataTree(Name, Description);
-            tree.Head.Childs.Add(new DataTreeNode("Version", _dfsNamespace.Version.ToString()));
-            tree.Head.Childs.Add(new DataTreeNode("ElementCount", _dfsNamespace.ElementCount.ToString()));
+        #endregion
 
-            foreach (var ele in _dfsNamespace.Elements)
-            {
-                var eleTree = new DataTreeNode("DFSNamespaceElement", "");
-                tree.Head.Childs.Add(eleTree);
-
-                eleTree.Childs.Add(new DataTreeNode("NameSize", ele.NameSize.ToString()));
-                eleTree.Childs.Add(new DataTreeNode("Name", ele.Name));
-                eleTree.Childs.Add(new DataTreeNode("DataSize", ele.DataSize.ToString()));
-                if (ele.Name == @"\siteroot")
-                {
-                    var siTree = new DataTreeNode("SiteInformation", "");
-                    eleTree.Childs.Add(siTree);
-                    siTree.Childs.Add(new DataTreeNode("SiteTableGuid", ele.DataSite.SiteTableGuid.ToString()));
-                    siTree.Childs.Add(new DataTreeNode("SiteEntryCount", ele.DataSite.SiteEntryCount.ToString()));
-                    foreach(var se in ele.DataSite.SiteEntries)
-                    {
-                        var seTree = new DataTreeNode("SiteEntry", "");
-                        siTree.Childs.Add(seTree);
-                        seTree.Childs.Add(new DataTreeNode("ServerNameSize", se.ServerNameSize.ToString()));
-                        seTree.Childs.Add(new DataTreeNode("ServerName", se.ServerName));
-                        seTree.Childs.Add(new DataTreeNode("SiteNameInfoCount", se.SiteNameInfoCount.ToString()));
-                        foreach(var sni in se.SiteNames)
-                        {
-                            var sniTree = new DataTreeNode("SiteNameInfo", "");
-                            seTree.Childs.Add(sniTree);
-                            sniTree.Childs.Add(new DataTreeNode("Flags", sni.Flags.ToString()));
-                            sniTree.Childs.Add(new DataTreeNode("SiteNameSize", sni.SiteNameSize.ToString()));
-                            sniTree.Childs.Add(new DataTreeNode("SiteName", sni.SiteName));
-                        }
-                    }
-                }
-                else
-                {
-                    var linkTree = new DataTreeNode("DFSNamespaceRootOrLink", "");
-                    eleTree.Childs.Add(linkTree);
-                    linkTree.Childs.Add(new DataTreeNode("RootOrLinkGuid", ele.DataRootOrLink.RootOrLinkGuid.ToString()));
-                    linkTree.Childs.Add(new DataTreeNode("PrefixSize", ele.DataRootOrLink.PrefixSize.ToString()));
-                    linkTree.Childs.Add(new DataTreeNode("Prefix", ele.DataRootOrLink.Prefix));
-                    linkTree.Childs.Add(new DataTreeNode("ShortPrefixSize", ele.DataRootOrLink.ShortPrefixSize.ToString()));
-                    linkTree.Childs.Add(new DataTreeNode("ShortPrefix", ele.DataRootOrLink.ShortPrefix));
-                    linkTree.Childs.Add(new DataTreeNode("RootOrLinkType", ele.DataRootOrLink.Type.ToString()));
-                    linkTree.Childs.Add(new DataTreeNode("RootOrLinkState", ele.DataRootOrLink.State.ToString()));
-                    linkTree.Childs.Add(new DataTreeNode("CommentSize", ele.DataRootOrLink.CommentSize.ToString()));
-                    linkTree.Childs.Add(new DataTreeNode("Comment", ele.DataRootOrLink.Comment));
-                    linkTree.Childs.Add(new DataTreeNode("PrefixTimeStamp", ele.DataRootOrLink.PrefixTimeStamp.ToString()));
-                    linkTree.Childs.Add(new DataTreeNode("StateTimeStamp", ele.DataRootOrLink.StateTimeStamp.ToString()));
-                    linkTree.Childs.Add(new DataTreeNode("CommentTimeStamp", ele.DataRootOrLink.CommentTimeStamp.ToString()));
-                    linkTree.Childs.Add(new DataTreeNode("Version", ele.DataRootOrLink.Version.ToString()));
-                    linkTree.Childs.Add(new DataTreeNode("TargetListSize", ele.DataRootOrLink.TargetListSize.ToString()));
-                    var tlTree = new DataTreeNode("TargetList", "");
-                    linkTree.Childs.Add(tlTree);
-                    tlTree.Childs.Add(new DataTreeNode("TargetCount", ele.DataRootOrLink.Targets.TargetCount.ToString()));
-                    foreach(var te in ele.DataRootOrLink.Targets.TargetEntries)
-                    {
-                        var teTree = new DataTreeNode("TargetEntry", "");
-                        tlTree.Childs.Add(teTree);
-                        teTree.Childs.Add(new DataTreeNode("TargetEntrySize", te.TargetEntrySize.ToString()));
-                        teTree.Childs.Add(new DataTreeNode("TargetTimeStamp", te.TargetTimeStamp.ToString()));
-                        teTree.Childs.Add(new DataTreeNode("TargetState", te.State.ToString()));
-                        teTree.Childs.Add(new DataTreeNode("TargetType", te.TargetType.ToString()));
-                        teTree.Childs.Add(new DataTreeNode("ServerNameSize", te.ServerNameSize.ToString()));
-                        teTree.Childs.Add(new DataTreeNode("ServerName", te.ServerName));
-                        teTree.Childs.Add(new DataTreeNode("ShareNameSize", te.ShareNameSize.ToString()));
-                        teTree.Childs.Add(new DataTreeNode("ShareName", te.ShareName));
-                    }
-
-                    linkTree.Childs.Add(new DataTreeNode("ReservedBlobSize", ele.DataRootOrLink.ReservedBlobSize.ToString()));
-                    linkTree.Childs.Add(new DataTreeNode("ReservedBlob", ele.DataRootOrLink.ReservedBlob.ToString()));
-                    linkTree.Childs.Add(new DataTreeNode("ReferralTTL", ele.DataRootOrLink.ReferralTTL.ToString()));
-                }
-            }
-
-            return tree;
-        }
     }
 }
