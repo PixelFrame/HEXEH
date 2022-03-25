@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -24,6 +25,13 @@ namespace HEXEH.Core
     {
         public string Label { get; set; } = "";
         public string Value { get; set; } = "";
-        public List<DataTreeNode> Childs { get; set; } = new();
+        public ObservableCollection<DataTreeNode> Childs { get; set; } = new();
+
+        public DataTreeNode() { }
+        public DataTreeNode(string lable, string value)
+        {
+            Label = lable;
+            Value = value;
+        }
     }
 }

@@ -55,34 +55,14 @@ namespace HEXEH.WPF
             {
                 stkPanelSettings.Children.RemoveRange(4, last - 4);
             }
-            
-            /*switch(selected)
-            {
-                case "String":
-                    RadioButton rbStrAscii = new();
-                    RadioButton rbStrUtf8 = new();
-                    RadioButton rbStrUtf16 = new();
-                    rbStrAscii.Content = "ASCII";
-                    rbStrUtf8.Content = "UTF-8";
-                    rbStrUtf16.Content = "Unicode";
-                    rbStrAscii.GroupName = "StringEncoding";
-                    rbStrUtf8.GroupName = "StringEncoding";
-                    rbStrUtf16.GroupName = "StringEncoding";
-                    rbStrAscii.IsChecked = true;
-
-                    stkPanelSettings.Children.Insert(4, rbStrUtf16);
-                    stkPanelSettings.Children.Insert(4, rbStrUtf8);
-                    stkPanelSettings.Children.Insert(4, rbStrAscii);
-                    break;
-                default:break;
-            }*/
         }
 
         private void DataConversion(byte[] blob)
         {
+            tvDataTree.Items.Clear();
             var selectedGuid = (Guid)cbbDataType.SelectedValue;
             if (selectedGuid == new Guid("37d68d01-f2ab-4674-9f8f-11e942d49abb")) return;
-            _converter.DoConversion(selectedGuid, blob);
+            tvDataTree.Items.Add(_converter.DoConversion(selectedGuid, blob).Head);
         }
     }
 }

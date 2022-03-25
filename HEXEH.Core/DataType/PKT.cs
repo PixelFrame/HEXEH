@@ -1,4 +1,5 @@
-﻿using System;
+﻿using HEXEH.Core.Helper.Windows.Common;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.InteropServices;
@@ -13,7 +14,8 @@ namespace HEXEH.Core.DataType
         public static string Name { get; } = "PKT";
         public static string Description { get; } = "DFS NamespaceV1 Metadata";
         public byte[] Blob { get; set; } = Array.Empty<byte>();
-        private DFSNamespace dfsNamespace;
+
+        private DFSNamespace _dfsNamespace;
 
         public static PKT ConvertFromBytes(byte[] blob)
         {
@@ -23,7 +25,7 @@ namespace HEXEH.Core.DataType
             try
             {
                 var dfsMarshaler = new DFSNamespaceMarshaler();
-                newObj.dfsNamespace = (DFSNamespace)dfsMarshaler.MarshalNativeToManaged(handle.AddrOfPinnedObject());
+                newObj._dfsNamespace = (DFSNamespace)dfsMarshaler.MarshalNativeToManaged(handle.AddrOfPinnedObject());
             }
             catch
             {
@@ -72,9 +74,9 @@ namespace HEXEH.Core.DataType
             public RootOrLinkState State;
             public ushort CommentSize;
             public string Comment;
-            public TimeStamp PrefixTimeStamp;
-            public TimeStamp StateTimeStamp;
-            public TimeStamp CommentTimeStamp;
+            public FILETIME PrefixTimeStamp;
+            public FILETIME StateTimeStamp;
+            public FILETIME CommentTimeStamp;
             public uint Version;
             public uint TargetListSize;
             public TargetList Targets;
@@ -102,7 +104,7 @@ namespace HEXEH.Core.DataType
         private struct TargetEntry
         {
             public uint TargetEntrySize;
-            public TimeStamp TargetTimeStamp;
+            public FILETIME TargetTimeStamp;
             public TargetState State;
             public uint TargetType; // Should always be 0x2
             public ushort ServerNameSize;
@@ -126,13 +128,6 @@ namespace HEXEH.Core.DataType
             public uint Flags;
             public ushort SiteNameSize;
             public string SiteName;
-        }
-
-        [StructLayout(LayoutKind.Sequential)]
-        private struct TimeStamp
-        {
-            public uint DateTimeL;
-            public uint DateTimeH;
         }
 
         [Flags()]
@@ -302,11 +297,11 @@ namespace HEXEH.Core.DataType
                 pNativeData += 2;
                 dfsnlink.Comment = Marshal.PtrToStringUni(pNativeData, dfsnlink.CommentSize >> 1);
                 pNativeData += dfsnlink.CommentSize;
-                dfsnlink.PrefixTimeStamp = (TimeStamp)Marshal.PtrToStructure(pNativeData, typeof(TimeStamp));
+                dfsnlink.PrefixTimeStamp = (FILETIME)Marshal.PtrToStructure(pNativeData, typeof(FILETIME));
                 pNativeData += 8;
-                dfsnlink.StateTimeStamp = (TimeStamp)Marshal.PtrToStructure(pNativeData, typeof(TimeStamp));
+                dfsnlink.StateTimeStamp = (FILETIME)Marshal.PtrToStructure(pNativeData, typeof(FILETIME));
                 pNativeData += 8;
-                dfsnlink.CommentTimeStamp = (TimeStamp)Marshal.PtrToStructure(pNativeData, typeof(TimeStamp));
+                dfsnlink.CommentTimeStamp = (FILETIME)Marshal.PtrToStructure(pNativeData, typeof(FILETIME));
                 pNativeData += 8;
                 dfsnlink.Version = (uint)Marshal.ReadInt32(pNativeData);
                 pNativeData += 4;
@@ -360,6 +355,7 @@ namespace HEXEH.Core.DataType
                 return tl;
             }
         }
+
         private class TargetEntryMarshaler : ICustomMarshaler
         {
             public void CleanUpManagedData(object ManagedObj)
@@ -386,7 +382,7 @@ namespace HEXEH.Core.DataType
                 var te = new TargetEntry();
                 te.TargetEntrySize = (uint)Marshal.ReadInt32(pNativeData);
                 pNativeData += 4;
-                te.TargetTimeStamp = (TimeStamp)Marshal.PtrToStructure(pNativeData, typeof(TimeStamp));
+                te.TargetTimeStamp = (FILETIME)Marshal.PtrToStructure(pNativeData, typeof(FILETIME));
                 pNativeData += 8;
                 te.State = (TargetState)Marshal.ReadInt32(pNativeData);
                 pNativeData += 4;
@@ -521,7 +517,83 @@ namespace HEXEH.Core.DataType
 
         public DataTree ToDataTree()
         {
-            throw new NotImplementedException();
+            var tree = new DataTree(Name, Description);
+            tree.Head.Childs.Add(new DataTreeNode("Version", _dfsNamespace.Version.ToString()));
+            tree.Head.Childs.Add(new DataTreeNode("ElementCount", _dfsNamespace.ElementCount.ToString()));
+
+            foreach (var ele in _dfsNamespace.Elements)
+            {
+                var eleTree = new DataTreeNode("DFSNamespaceElement", "");
+                tree.Head.Childs.Add(eleTree);
+
+                eleTree.Childs.Add(new DataTreeNode("NameSize", ele.NameSize.ToString()));
+                eleTree.Childs.Add(new DataTreeNode("Name", ele.Name));
+                eleTree.Childs.Add(new DataTreeNode("DataSize", ele.DataSize.ToString()));
+                if (ele.Name == @"\siteroot")
+                {
+                    var siTree = new DataTreeNode("SiteInformation", "");
+                    eleTree.Childs.Add(siTree);
+                    siTree.Childs.Add(new DataTreeNode("SiteTableGuid", ele.DataSite.SiteTableGuid.ToString()));
+                    siTree.Childs.Add(new DataTreeNode("SiteEntryCount", ele.DataSite.SiteEntryCount.ToString()));
+                    foreach(var se in ele.DataSite.SiteEntries)
+                    {
+                        var seTree = new DataTreeNode("SiteEntry", "");
+                        siTree.Childs.Add(seTree);
+                        seTree.Childs.Add(new DataTreeNode("ServerNameSize", se.ServerNameSize.ToString()));
+                        seTree.Childs.Add(new DataTreeNode("ServerName", se.ServerName));
+                        seTree.Childs.Add(new DataTreeNode("SiteNameInfoCount", se.SiteNameInfoCount.ToString()));
+                        foreach(var sni in se.SiteNames)
+                        {
+                            var sniTree = new DataTreeNode("SiteNameInfo", "");
+                            seTree.Childs.Add(sniTree);
+                            sniTree.Childs.Add(new DataTreeNode("Flags", sni.Flags.ToString()));
+                            sniTree.Childs.Add(new DataTreeNode("SiteNameSize", sni.SiteNameSize.ToString()));
+                            sniTree.Childs.Add(new DataTreeNode("SiteName", sni.SiteName));
+                        }
+                    }
+                }
+                else
+                {
+                    var linkTree = new DataTreeNode("DFSNamespaceRootOrLink", "");
+                    eleTree.Childs.Add(linkTree);
+                    linkTree.Childs.Add(new DataTreeNode("RootOrLinkGuid", ele.DataRootOrLink.RootOrLinkGuid.ToString()));
+                    linkTree.Childs.Add(new DataTreeNode("PrefixSize", ele.DataRootOrLink.PrefixSize.ToString()));
+                    linkTree.Childs.Add(new DataTreeNode("Prefix", ele.DataRootOrLink.Prefix));
+                    linkTree.Childs.Add(new DataTreeNode("ShortPrefixSize", ele.DataRootOrLink.ShortPrefixSize.ToString()));
+                    linkTree.Childs.Add(new DataTreeNode("ShortPrefix", ele.DataRootOrLink.ShortPrefix));
+                    linkTree.Childs.Add(new DataTreeNode("RootOrLinkType", ele.DataRootOrLink.Type.ToString()));
+                    linkTree.Childs.Add(new DataTreeNode("RootOrLinkState", ele.DataRootOrLink.State.ToString()));
+                    linkTree.Childs.Add(new DataTreeNode("CommentSize", ele.DataRootOrLink.CommentSize.ToString()));
+                    linkTree.Childs.Add(new DataTreeNode("Comment", ele.DataRootOrLink.Comment));
+                    linkTree.Childs.Add(new DataTreeNode("PrefixTimeStamp", ele.DataRootOrLink.PrefixTimeStamp.ToString()));
+                    linkTree.Childs.Add(new DataTreeNode("StateTimeStamp", ele.DataRootOrLink.StateTimeStamp.ToString()));
+                    linkTree.Childs.Add(new DataTreeNode("CommentTimeStamp", ele.DataRootOrLink.CommentTimeStamp.ToString()));
+                    linkTree.Childs.Add(new DataTreeNode("Version", ele.DataRootOrLink.Version.ToString()));
+                    linkTree.Childs.Add(new DataTreeNode("TargetListSize", ele.DataRootOrLink.TargetListSize.ToString()));
+                    var tlTree = new DataTreeNode("TargetList", "");
+                    linkTree.Childs.Add(tlTree);
+                    tlTree.Childs.Add(new DataTreeNode("TargetCount", ele.DataRootOrLink.Targets.TargetCount.ToString()));
+                    foreach(var te in ele.DataRootOrLink.Targets.TargetEntries)
+                    {
+                        var teTree = new DataTreeNode("TargetEntry", "");
+                        tlTree.Childs.Add(teTree);
+                        teTree.Childs.Add(new DataTreeNode("TargetEntrySize", te.TargetEntrySize.ToString()));
+                        teTree.Childs.Add(new DataTreeNode("TargetTimeStamp", te.TargetTimeStamp.ToString()));
+                        teTree.Childs.Add(new DataTreeNode("TargetState", te.State.ToString()));
+                        teTree.Childs.Add(new DataTreeNode("TargetType", te.TargetType.ToString()));
+                        teTree.Childs.Add(new DataTreeNode("ServerNameSize", te.ServerNameSize.ToString()));
+                        teTree.Childs.Add(new DataTreeNode("ServerName", te.ServerName));
+                        teTree.Childs.Add(new DataTreeNode("ShareNameSize", te.ShareNameSize.ToString()));
+                        teTree.Childs.Add(new DataTreeNode("ShareName", te.ShareName));
+                    }
+
+                    linkTree.Childs.Add(new DataTreeNode("ReservedBlobSize", ele.DataRootOrLink.ReservedBlobSize.ToString()));
+                    linkTree.Childs.Add(new DataTreeNode("ReservedBlob", ele.DataRootOrLink.ReservedBlob.ToString()));
+                    linkTree.Childs.Add(new DataTreeNode("ReferralTTL", ele.DataRootOrLink.ReferralTTL.ToString()));
+                }
+            }
+
+            return tree;
         }
     }
 }

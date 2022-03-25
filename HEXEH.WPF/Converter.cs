@@ -6,6 +6,7 @@ using System.Linq;
 using System.Reflection;
 using System.Text;
 using System.Threading.Tasks;
+using System.Windows.Controls;
 
 namespace HEXEH.WPF
 {
@@ -29,14 +30,17 @@ namespace HEXEH.WPF
              {
                  var name = datatype.GetProperty("Name").GetValue(null) as string;
                  var description = datatype.GetProperty("Description").GetValue(null) as string;
-                 return $"{name}: {description} ({datatype.GUID})";
+                 return $"{name}: {description}";
             });
         }
 
-        internal void DoConversion(Guid classId, byte[] blob)
+        internal DataTree DoConversion(Guid classId, byte[] blob)
         {
             var selectedType = DataTypes.FirstOrDefault(x => x.GUID == classId);
-            var convertedObj = selectedType.GetMethod("ConvertFromBytes").Invoke(null, new object[] { blob });
+            if (selectedType == null) return new DataTree("Null", "Null");
+            var convertedObj = (IDataType?)selectedType.GetMethod("ConvertFromBytes").Invoke(null, new object[] { blob });
+            if (convertedObj == null) return new DataTree("Null", "Null");
+            return convertedObj.ToDataTree();
         }
     }
 #pragma warning restore CS8602 // Dereference of a possibly null reference.
