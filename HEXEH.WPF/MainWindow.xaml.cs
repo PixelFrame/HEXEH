@@ -23,7 +23,10 @@ namespace HEXEH.WPF
     /// </summary>
     public partial class MainWindow : Window
     {
-        private static Converter _converter = new();
+        private static readonly Converter _converter = new();
+        private static Guid _selectedType = Guid.Empty;
+        private static Dictionary<string, object>? _settingMap = null;
+
         public MainWindow()
         {
             InitializeComponent();
@@ -41,7 +44,7 @@ namespace HEXEH.WPF
             {
                 MessageBox.Show("Invalid HEX input!", "Warning", MessageBoxButton.OK, MessageBoxImage.Exclamation);
             }
-            var hdInput = HexDump.ConvertFromBytes(bytesInput);
+            var hdInput = HexDump.ConvertFromBytes(bytesInput, new Dictionary<string, object>() { { "LineLength", (uint)16 } });
             tbkHexDumpLeft.Text = hdInput.LineNum;
             tbHexDumpMid.Text = hdInput.FormattedHex;
             tbHexDumpRight.Text = hdInput.FormattedChars;
@@ -50,19 +53,65 @@ namespace HEXEH.WPF
 
         private void cbbDataType_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
-            var last = stkPanelSettings.Children.Count - 1;
-            if(last > 4)
+            stkPanelSubSettings.Children.Clear();
+            if (cbbDataType.SelectedValue == null || cbbDataType.SelectedValuePath != "Key") return;
+            _selectedType = (Guid)cbbDataType.SelectedValue;
+
+            var settingMap = _converter.GetSettingMap(_selectedType);
+            if (settingMap == null) return;
+
+            foreach (var setting in settingMap)
             {
-                stkPanelSettings.Children.RemoveRange(4, last - 4);
+                var settingName = setting.Key.Split('#');
+                var tbkSubSettingName = new Label();
+                tbkSubSettingName.Content = settingName[0];
+                stkPanelSubSettings.Children.Add(tbkSubSettingName);
+                switch (settingName[1])
+                {
+                    case ("single"):
+                        {
+                            foreach (var option in setting.Value)
+                            {
+                                var rbSubsettingOption = new RadioButton();
+                                rbSubsettingOption.Content = option;
+                                rbSubsettingOption.GroupName = settingName[0];
+                                stkPanelSubSettings.Children.Add(rbSubsettingOption);
+                            }
+                            break;
+                        }
+                    case ("multi"):
+                        {
+                            foreach (var option in setting.Value)
+                            {
+                                var cbxSubsettingOption = new CheckBox();
+                                cbxSubsettingOption.Content = option;
+                                stkPanelSubSettings.Children.Add(cbxSubsettingOption);
+                            }
+                            break;
+                        }
+                    case ("num"): 
+                        {
+                            var tbSubSettingNumInput = new TextBox();
+                            tbSubSettingNumInput.AcceptsReturn = false;
+                            stkPanelSubSettings.Children.Add(tbSubSettingNumInput);
+                            break;
+                        }
+                    case ("string"):
+                        {
+                            var tbSubSettingNumInput = new TextBox();
+                            tbSubSettingNumInput.AcceptsReturn = false;
+                            stkPanelSubSettings.Children.Add(tbSubSettingNumInput);
+                            break;
+                        }
+                }
             }
         }
 
         private void DataConversion(byte[] blob)
         {
             tvDataTree.Items.Clear();
-            var selectedGuid = (Guid)cbbDataType.SelectedValue;
-            if (selectedGuid == new Guid("37d68d01-f2ab-4674-9f8f-11e942d49abb")) return;
-            tvDataTree.Items.Add(_converter.DoConversion(selectedGuid, blob).Head);
+            if (_selectedType == new Guid("37d68d01-f2ab-4674-9f8f-11e942d49abb")) return;
+            tvDataTree.Items.Add(_converter.DoConversion(_selectedType, blob, _settingMap).Head);
         }
     }
 }

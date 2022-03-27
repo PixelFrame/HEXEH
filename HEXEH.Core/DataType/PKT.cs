@@ -27,7 +27,7 @@ namespace HEXEH.Core.DataType
 
         private DFSNamespace _dfsNamespace;
 
-        public static PKT ConvertFromBytes(byte[] blob)
+        public static PKT ConvertFromBytes(byte[] blob, Dictionary<string, object>? settingMap)
         {
             var newObj = new PKT
             {
@@ -54,14 +54,9 @@ namespace HEXEH.Core.DataType
             }
         }
 
-        IDataType IDataType.ConvertFromBytes(byte[] blob)
+        IDataType IDataType.ConvertFromBytes(byte[] blob, Dictionary<string, object>? settingMap)
         {
-            return ConvertFromBytes(blob);
-        }
-
-        IDataType IDataType.ConvertFromBytes(byte[] blob, Dictionary<string, object> settingMap)
-        {
-            return ConvertFromBytes(blob);
+            return ConvertFromBytes(blob, settingMap);
         }
 
         public DataTree ToDataTree()

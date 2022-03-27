@@ -34,13 +34,20 @@ namespace HEXEH.WPF
             });
         }
 
-        internal DataTree DoConversion(Guid classId, byte[] blob)
+        internal DataTree DoConversion(Guid classId, byte[] blob, Dictionary<string, object>? settingMap)
         {
             var selectedType = DataTypes.FirstOrDefault(x => x.GUID == classId);
             if (selectedType == null) return new DataTree("Null", "Null");
-            var convertedObj = (IDataType?)selectedType.GetMethod("ConvertFromBytes").Invoke(null, new object[] { blob });
+            var convertedObj = (IDataType?)selectedType.GetMethod("ConvertFromBytes").Invoke(null, new object[] { blob, settingMap });
             if (convertedObj == null) return new DataTree("Null", "Null");
             return convertedObj.ToDataTree();
+        }
+
+        internal Dictionary<string, List<string>?>? GetSettingMap(Guid classId)
+        {
+            var selectedType = DataTypes.FirstOrDefault(x => x.GUID == classId);
+            if (selectedType == null) return null;
+            return (Dictionary<string, List<string>?>?)selectedType.GetProperty("SettingMap").GetValue(null);
         }
     }
 #pragma warning restore CS8602 // Dereference of a possibly null reference.

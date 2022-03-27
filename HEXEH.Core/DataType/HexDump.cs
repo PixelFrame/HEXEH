@@ -12,6 +12,7 @@ namespace HEXEH.Core.DataType
         private string _formattedHex = "";
         private string _formattedChars = "";
         private string _lineNum = "";
+        private uint _lineLength = 16;
         public string LineNum { get => _lineNum; }
         public string FormattedHex { get => _formattedHex; }
         public string FormattedChars { get => _formattedChars; }
@@ -23,13 +24,14 @@ namespace HEXEH.Core.DataType
             set
             {
                 _blob = value;
-                DoConvertFromBytes(16);
+                DoConvertFromBytes(_lineLength);
             }
         }
 
-        public HexDump(byte[] blob)
+        public HexDump(byte[] blob, uint lineLength)
         {
             Blob = blob;
+            _lineLength = lineLength;
         }
 
         private void DoConvertFromBytes(uint lineLength)
@@ -61,19 +63,16 @@ namespace HEXEH.Core.DataType
             _formattedChars = chars.ToString();
         }
 
-        public static HexDump ConvertFromBytes(byte[] blob)
+        public static HexDump ConvertFromBytes(byte[] blob, Dictionary<string, object>? settingMap)
         {
-            return new HexDump(blob);
+            if (settingMap == null) return new HexDump(blob, 16);
+            var lineLength = (uint) settingMap["LineLength"];
+            return new HexDump(blob, lineLength);
         }
 
-        IDataType IDataType.ConvertFromBytes(byte[] blob)
+        IDataType IDataType.ConvertFromBytes(byte[] blob, Dictionary<string, object>? settingMap)
         {
-            return ConvertFromBytes(blob);
-        }
-
-        IDataType IDataType.ConvertFromBytes(byte[] blob, Dictionary<string, object> settingMap)
-        {
-            return ConvertFromBytes(blob);
+            return ConvertFromBytes(blob, settingMap);
         }
 
         public DataTree ToDataTree()
@@ -83,7 +82,7 @@ namespace HEXEH.Core.DataType
 
         public static Dictionary<string, List<string>?>? SettingMap { get; } = new Dictionary<string, List<string>?>() 
         {
-            {"LineLength#uint#1", null }
+            {"LineLength#num#1", null }
         };
     }
 }
