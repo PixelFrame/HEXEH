@@ -13,7 +13,8 @@ namespace HEXEH.Core.DataType
     {
         public static string Name { get; } = "PKT";
         public static string Description { get; } = "DFS NamespaceV1 Metadata";
-        
+        public static Dictionary<string, List<string>?>? SettingMap { get; } = null;
+
         private byte[] _blob = Array.Empty<byte>();
         public byte[] Blob
         {
@@ -139,8 +140,6 @@ namespace HEXEH.Core.DataType
 
             return tree;
         }
-
-        public static Dictionary<string, List<string>?>? SettingMap { get; } = null;
 
         #region PKT structs
         [StructLayout(LayoutKind.Sequential)]
@@ -456,9 +455,8 @@ namespace HEXEH.Core.DataType
                 for (int i = 0; i < tl.TargetCount; ++i)
                 {
                     tl.TargetEntries[i] = (TargetEntry)teMarshaler.MarshalNativeToManaged(pNativeData);
-                    pNativeData += (int)tl.TargetEntries[i].TargetEntrySize;
+                    pNativeData += (int)tl.TargetEntries[i].TargetEntrySize + 4;
                 }
-
                 return tl;
             }
         }
