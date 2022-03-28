@@ -25,10 +25,9 @@
         </Menu>
         <Grid x:Name="SecondGrid" Grid.Row="1">
             <Grid.ColumnDefinitions>
-                <ColumnDefinition Width="200"/>
-                <ColumnDefinition Width="2*"/>
-                <ColumnDefinition Width="3"/>
                 <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="3"/>
+                <ColumnDefinition Width="3*"/>
             </Grid.ColumnDefinitions>
             <StackPanel x:Name="stkPanelSettings" Grid.Column="0">
                 <Label>Input HEX</Label>
@@ -38,20 +37,27 @@
                 <StackPanel x:Name="stkPanelSubSettings" Margin="0,5,0,5"></StackPanel>
                 <Button x:Name="btnGo" Click="btnGo_Click">Go</Button>
             </StackPanel>
-            <ScrollViewer Grid.Column="1">
-            <Grid>
-                <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="0.75*"/>
-                    <ColumnDefinition Width="4*"/>
-                    <ColumnDefinition Width="2*"/>
-                </Grid.ColumnDefinitions>
-                <TextBlock x:Name="tbkHexDumpLeft" Grid.Column="0" TextWrapping="NoWrap" Background="#FFECECEC" FontFamily="Cascadia Mono Light, Consolas" ></TextBlock>
-                <TextBox x:Name="tbHexDumpMid" Grid.Column="1" TextWrapping="Wrap" Background="WhiteSmoke" FontFamily="Cascadia Mono Light, Consolas" IsReadOnly="True" BorderBrush="{x:Null}" ></TextBox>
-                <TextBox x:Name="tbHexDumpRight" Grid.Column="2" TextWrapping="Wrap" FontFamily="Cascadia Mono Light, Consolas" IsReadOnly="True" BorderBrush="{x:Null}" ></TextBox>
-            </Grid>
-            </ScrollViewer>
-            <GridSplitter Grid.Column="2" Width="3" HorizontalAlignment="Stretch"/>
-            <TreeView x:Name="tvDataTree" Grid.Column="3" FontFamily="Cascadia Mono Light, Consolas">
+            <GridSplitter Grid.Column="1" Width="3" VerticalAlignment="Stretch" ResizeBehavior="PreviousAndNext"/>
+            <Grid Grid.Column="2">
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="*"/>
+                    <RowDefinition Height="3"/>
+                    <RowDefinition Height="*"/>
+                </Grid.RowDefinitions>
+                <ScrollViewer Grid.Row="0">
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="0.75*"/>
+                            <ColumnDefinition Width="4*"/>
+                            <ColumnDefinition Width="2*"/>
+                        </Grid.ColumnDefinitions>
+                        <TextBlock x:Name="tbkHexDumpLeft" Grid.Column="0" TextWrapping="NoWrap" Background="#FFECECEC" FontFamily="Cascadia Mono Light, Consolas" ></TextBlock>
+                        <TextBox x:Name="tbHexDumpMid" Grid.Column="1" TextWrapping="Wrap" Background="WhiteSmoke" FontFamily="Cascadia Mono Light, Consolas" IsReadOnly="True" BorderBrush="{x:Null}" ></TextBox>
+                        <TextBox x:Name="tbHexDumpRight" Grid.Column="2" TextWrapping="Wrap" FontFamily="Cascadia Mono Light, Consolas" IsReadOnly="True" BorderBrush="{x:Null}" ></TextBox>
+                    </Grid>
+                </ScrollViewer>
+                <GridSplitter Grid.Row="1" Height="3" HorizontalAlignment="Stretch" ResizeBehavior="PreviousAndNext"/>
+                <TreeView x:Name="tvDataTree" Grid.Row="2" FontFamily="Cascadia Mono Light, Consolas">
                     <TreeView.ItemTemplate>
                         <HierarchicalDataTemplate DataType="{x:Type core:DataTreeNode}" ItemsSource="{Binding Childs}">
                             <TextBlock>
@@ -65,6 +71,7 @@
                         </HierarchicalDataTemplate>
                     </TreeView.ItemTemplate>
                 </TreeView>
+            </Grid>
         </Grid>
         <StatusBar Grid.Row="2"/>
     </Grid>
