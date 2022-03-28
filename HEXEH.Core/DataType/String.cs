@@ -12,7 +12,7 @@ namespace HEXEH.Core.DataType
         public static string Description { get; } = "HEX to Plain String";
         public static Dictionary<string, List<string>?>? SettingMap { get; } = new Dictionary<string, List<string>?>()
         {
-            { "Encoding#multi", new List<string>() { "ASCII", "UTF8", "Unicode", "gb2312", "GB18030", "shift_jis", "big5" } },
+            { "Encoding#multi", new List<string>() { "ASCII", "UTF-8", "UTF-16", "GB2312", "GBK", "GB18030", "big5", "shift_jis" } },
         };
         public Dictionary<string, List<string>>? InputSettingMap { get; set; } = null;
         private byte[] _blob = Array.Empty<byte>();
@@ -30,6 +30,7 @@ namespace HEXEH.Core.DataType
         {
             if (InputSettingMap != null)
             {
+                Encoding.RegisterProvider(CodePagesEncodingProvider.Instance);
                 var encodings = InputSettingMap["Encoding"];
                 foreach (var encoding in encodings)
                 {

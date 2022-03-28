@@ -59,6 +59,8 @@ namespace HEXEH.WPF
 
             var settingMap = _converter.GetSettingMap(_selectedType);
             if (settingMap == null) return;
+            if (_settingMap == null) _settingMap = new Dictionary<string, object>();
+            else _settingMap.Clear();
 
             foreach (var setting in settingMap)
             {
@@ -70,41 +72,86 @@ namespace HEXEH.WPF
                 {
                     case ("single"):
                         {
+                            _settingMap.Add(settingName[0], setting.Value[0]);
                             foreach (var option in setting.Value)
                             {
                                 var rbSubsettingOption = new RadioButton();
                                 rbSubsettingOption.Content = option;
                                 rbSubsettingOption.GroupName = settingName[0];
+                                rbSubsettingOption.Checked += rbSubsettingOption_Checked;
                                 stkPanelSubSettings.Children.Add(rbSubsettingOption);
                             }
                             break;
                         }
                     case ("multi"):
                         {
+                            _settingMap.Add(settingName[0], setting.Value);
                             foreach (var option in setting.Value)
                             {
                                 var cbxSubsettingOption = new CheckBox();
+                                cbxSubsettingOption.Resources = new ResourceDictionary { { "SettingName", settingName[0] }, { "Option", option } };
                                 cbxSubsettingOption.Content = option;
+                                cbxSubsettingOption.IsChecked = true;
+                                cbxSubsettingOption.Checked += cbxSubsettingOption_Checked;
+                                cbxSubsettingOption.Unchecked += cbxSubsettingOption_Unchecked;
                                 stkPanelSubSettings.Children.Add(cbxSubsettingOption);
                             }
                             break;
                         }
                     case ("num"): 
                         {
+                            _settingMap.Add(settingName[0], 0);
                             var tbSubSettingNumInput = new TextBox();
                             tbSubSettingNumInput.AcceptsReturn = false;
+                            tbSubSettingNumInput.TextChanged += tbSubSettingNumInput_TextChanged;
                             stkPanelSubSettings.Children.Add(tbSubSettingNumInput);
                             break;
                         }
                     case ("string"):
                         {
-                            var tbSubSettingNumInput = new TextBox();
-                            tbSubSettingNumInput.AcceptsReturn = false;
-                            stkPanelSubSettings.Children.Add(tbSubSettingNumInput);
+                            _settingMap.Add(settingName[0], "");
+                            var tbSubSettingStrInput = new TextBox();
+                            tbSubSettingStrInput.AcceptsReturn = false;
+                            tbSubSettingStrInput.TextChanged += tbSubSettingStrInput_TextChanged;
+                            stkPanelSubSettings.Children.Add(tbSubSettingStrInput);
                             break;
                         }
                 }
             }
+        }
+
+        private void tbSubSettingStrInput_TextChanged(object sender, TextChangedEventArgs e)
+        {
+            throw new NotImplementedException();
+        }
+
+        private void tbSubSettingNumInput_TextChanged(object sender, TextChangedEventArgs e)
+        {
+            throw new NotImplementedException();
+        }
+
+        private void cbxSubsettingOption_Checked(object sender, RoutedEventArgs e)
+        {
+            var srcCbx = (CheckBox)e.Source;
+            var settingName = (string)srcCbx.Resources["SettingName"];
+            var option = (string)srcCbx.Resources["Option"];
+            var settingList = (List<string>)_settingMap[settingName];
+            settingList.Add(option);
+        }
+
+        private void cbxSubsettingOption_Unchecked(object sender, RoutedEventArgs e)
+        {
+            var srcCbx = (CheckBox)e.Source;
+            var settingName = (string)srcCbx.Resources["SettingName"];
+            var option = (string)srcCbx.Resources["Option"];
+            var settingList = (List<string>)_settingMap[settingName]; 
+            settingList.Remove(option);
+        }
+
+        private void rbSubsettingOption_Checked(object sender, RoutedEventArgs e)
+        {
+            var srcRb = (RadioButton)e.Source;
+            _settingMap[srcRb.GroupName] = srcRb.Content;
         }
 
         private void DataConversion(byte[] blob)
