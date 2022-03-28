@@ -11,12 +11,12 @@ namespace HEXEH.Core
     {
         public DataTreeNode Head { get; set; } = new DataTreeNode();
 
-        public DataTree(string Name, string Description)
+        public DataTree(string name, string description)
         {
             Head = new DataTreeNode
             {
-                Label = Name,
-                Value = Description
+                Label = name,
+                Value = description
             };
         }
     }
