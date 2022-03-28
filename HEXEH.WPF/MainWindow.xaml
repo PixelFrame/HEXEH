@@ -70,6 +70,15 @@
                             </TextBlock>
                         </HierarchicalDataTemplate>
                     </TreeView.ItemTemplate>
+                    <TreeView.ContextMenu>
+                        <ContextMenu>
+                            <MenuItem Command="Copy">
+                                <MenuItem.Icon>
+                                    <Image Source="/HEXEH.WPF;component/res/images/Copy.png"/>
+                                </MenuItem.Icon>
+                            </MenuItem>
+                        </ContextMenu>
+                    </TreeView.ContextMenu>
                 </TreeView>
             </Grid>
         </Grid>
