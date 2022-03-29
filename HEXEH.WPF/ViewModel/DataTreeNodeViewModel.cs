@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Linq;
+using System.Runtime.CompilerServices;
 using System.Text;
 using System.Threading.Tasks;
 
@@ -13,7 +14,7 @@ namespace HEXEH.WPF.ViewModel
     {
         private DataTreeNode _node;
         private DataTreeNodeViewModel? _parent;
-        private ReadOnlyCollection<DataTreeNodeViewModel> _childs;
+        private ObservableCollection<DataTreeNodeViewModel> _childs;
 
         private bool _isExpanded;
         private bool _isSelected;
@@ -25,6 +26,7 @@ namespace HEXEH.WPF.ViewModel
                 if (value != _isExpanded)
                 {
                     _isExpanded = value;
+                    NotifyPropertyChanged();
                 }
             }
         }
@@ -36,12 +38,13 @@ namespace HEXEH.WPF.ViewModel
                 if (value != _isSelected)
                 {
                     _isSelected = value;
+                    NotifyPropertyChanged();
                 }
             }
         }
         public string Label { get => _node.Label; }
         public string Value { get => _node.Value; }
-        public ReadOnlyCollection<DataTreeNodeViewModel> Childs { get => _childs; }
+        public ObservableCollection<DataTreeNodeViewModel> Childs { get => _childs; }
         public DataTreeNodeViewModel? Parent { get => _parent; }
 
         public DataTreeNodeViewModel(DataTreeNode node, DataTreeNodeViewModel? parent)
@@ -49,7 +52,7 @@ namespace HEXEH.WPF.ViewModel
             _node = node;
             _parent = parent;
 
-            _childs = new ReadOnlyCollection<DataTreeNodeViewModel>(
+            _childs = new ObservableCollection<DataTreeNodeViewModel>(
                     (from child in _node.Childs
                      select new DataTreeNodeViewModel(child, this))
                      .ToList());
@@ -59,6 +62,40 @@ namespace HEXEH.WPF.ViewModel
         {
         }
 
+        public string ToTreeText()
+        {
+            var sbResult = new StringBuilder();
+            printNode("", true, true, ref sbResult);
+
+            return sbResult.ToString();
+        }
+
+        private void printNode(string indent, bool root, bool last, ref StringBuilder sbResult)
+        {
+            sbResult.Append(indent);
+            if (root) { }
+            else if (last)
+            {
+                sbResult.Append(@"└─");
+                indent += "  ";
+            }
+            else
+            {
+                sbResult.Append(@"├─");
+                indent += "│ ";
+            }
+            sbResult.AppendLine($"{Label}: {Value}");
+            for (int i = 0; i < _childs.Count; i++)
+                _childs[i].printNode(indent, false, i == _childs.Count - 1, ref sbResult);
+        }
+
         public event PropertyChangedEventHandler? PropertyChanged;
+        private void NotifyPropertyChanged([CallerMemberName] string propertyName = "")
+        {
+            if (PropertyChanged != null)
+            {
+                PropertyChanged(this, new PropertyChangedEventArgs(propertyName));
+            }
+        }
     }
 }

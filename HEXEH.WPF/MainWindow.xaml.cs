@@ -27,6 +27,7 @@ namespace HEXEH.WPF
         private static readonly Converter _converter = new();
         private static Guid _selectedType = Guid.Empty;
         private static Dictionary<string, object>? _settingMap = null;
+        private DataTreeViewModel? _vmDataTree = null;
 
         public MainWindow()
         {
@@ -91,7 +92,9 @@ namespace HEXEH.WPF
                             {
                                 var cbxSubsettingOption = new CheckBox();
                                 cbxSubsettingOption.Resources = new ResourceDictionary { { "SettingName", settingName[0] }, { "Option", option } };
-                                cbxSubsettingOption.Content = option;
+                                var tbSubSettingOption = new TextBlock();
+                                tbSubSettingOption.Text = option;
+                                cbxSubsettingOption.Content = tbSubSettingOption;
                                 cbxSubsettingOption.IsChecked = true;
                                 cbxSubsettingOption.Checked += cbxSubsettingOption_Checked;
                                 cbxSubsettingOption.Unchecked += cbxSubsettingOption_Unchecked;
@@ -157,10 +160,10 @@ namespace HEXEH.WPF
 
         private void DataConversion(byte[] blob)
         {
-            tvDataTree.Items.Clear();
             if (_selectedType == new Guid("37d68d01-f2ab-4674-9f8f-11e942d49abb")) return;
-            var vmDataTreeNode = new DataTreeNodeViewModel(_converter.DoConversion(_selectedType, blob, _settingMap).Head);
-            tvDataTree.Items.Add(vmDataTreeNode);
+            _vmDataTree = new DataTreeViewModel(_converter.DoConversion(_selectedType, blob, _settingMap));
+            _vmDataTree.Head[0].IsExpanded = true;
+            tvDataTree.DataContext = _vmDataTree;
         }
 
         private void tvDataItem_PreviewMouseRightButtonDown(object sender, MouseButtonEventArgs e)
@@ -169,25 +172,25 @@ namespace HEXEH.WPF
             tvi.IsSelected = true;
         }
 
-        private void tvDataTreeMenu_Copy_Click(object sender, RoutedEventArgs e)
+        private void tvDataTreeMenu_CopyValue_Click(object sender, RoutedEventArgs e)
         {
             var menuItem = (MenuItem)sender;
             var vmDataTreeNode = (DataTreeNodeViewModel)menuItem.DataContext;
-            Clipboard.SetData(DataFormats.Text, vmDataTreeNode.Value);
+            Clipboard.SetText(vmDataTreeNode.Value);
+        }
+
+        private void tvDataTreeMenu_CopyBoth_Click(object sender, RoutedEventArgs e)
+        {
+            var menuItem = (MenuItem)sender;
+            var vmDataTreeNode = (DataTreeNodeViewModel)menuItem.DataContext;
+            Clipboard.SetText(vmDataTreeNode.Label + ": " + vmDataTreeNode.Value);
         }
 
         private void tvDataTreeMenu_CopySub_Click(object sender, RoutedEventArgs e)
         {
             var menuItem = (MenuItem)sender;
             var vmDataTreeNode = (DataTreeNodeViewModel)menuItem.DataContext;
-            //Clipboard.SetData(DataFormats.Text, vmDataTreeNode.Value);
-        }
-
-        private void tvDataTreeMenu_CopyAll_Click(object sender, RoutedEventArgs e)
-        {
-            var menuItem = (MenuItem)sender;
-            var vmDataTreeNode = (DataTreeNodeViewModel)menuItem.DataContext;
-            //Clipboard.SetData(DataFormats.Text, vmDataTreeNode.Value);
+            Clipboard.SetText(vmDataTreeNode.ToTreeText());
         }
     }
 }

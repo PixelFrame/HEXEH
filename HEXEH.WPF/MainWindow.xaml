@@ -57,7 +57,7 @@
                     </Grid>
                 </ScrollViewer>
                 <GridSplitter Grid.Row="1" Height="3" HorizontalAlignment="Stretch" ResizeBehavior="PreviousAndNext"/>
-                <TreeView x:Name="tvDataTree" Grid.Row="2" FontFamily="Cascadia Mono Light, Consolas">
+                <TreeView x:Name="tvDataTree" ItemsSource="{Binding Head}" Grid.Row="2" FontFamily="Cascadia Mono Light, Consolas">
                     <TreeView.ItemTemplate>
                         <HierarchicalDataTemplate DataType="{x:Type viewmodel:DataTreeNodeViewModel}" ItemsSource="{Binding Childs}">
                             <TextBlock>
@@ -69,9 +69,9 @@
                                 </TextBlock.Text>
                                 <TextBlock.ContextMenu>
                                     <ContextMenu Focusable="False">
-                                        <MenuItem Header="Copy Item" Focusable="False" Click="tvDataTreeMenu_Copy_Click"/>
-                                        <MenuItem Header="Copy SubTree" Focusable="False" />
-                                        <MenuItem Header="Copy All" Focusable="False" />
+                                        <MenuItem Header="Copy Value" Focusable="False" Click="tvDataTreeMenu_CopyValue_Click"/>
+                                        <MenuItem Header="Copy Item" Focusable="False" Click="tvDataTreeMenu_CopyBoth_Click" />
+                                        <MenuItem Header="Copy SubTree" Focusable="False" Click="tvDataTreeMenu_CopySub_Click" />
                                     </ContextMenu>
                                 </TextBlock.ContextMenu>
                             </TextBlock>
