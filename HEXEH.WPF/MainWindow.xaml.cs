@@ -1,6 +1,7 @@
 ﻿using HEXEH.Core;
 using HEXEH.Core.DataType;
 using HEXEH.Core.Utility;
+using HEXEH.WPF.ViewModel;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -158,7 +159,35 @@ namespace HEXEH.WPF
         {
             tvDataTree.Items.Clear();
             if (_selectedType == new Guid("37d68d01-f2ab-4674-9f8f-11e942d49abb")) return;
-            tvDataTree.Items.Add(_converter.DoConversion(_selectedType, blob, _settingMap).Head);
+            var vmDataTreeNode = new DataTreeNodeViewModel(_converter.DoConversion(_selectedType, blob, _settingMap).Head);
+            tvDataTree.Items.Add(vmDataTreeNode);
+        }
+
+        private void tvDataItem_PreviewMouseRightButtonDown(object sender, MouseButtonEventArgs e)
+        {
+            TreeViewItem tvi = (TreeViewItem)sender;
+            tvi.IsSelected = true;
+        }
+
+        private void tvDataTreeMenu_Copy_Click(object sender, RoutedEventArgs e)
+        {
+            var menuItem = (MenuItem)sender;
+            var vmDataTreeNode = (DataTreeNodeViewModel)menuItem.DataContext;
+            Clipboard.SetData(DataFormats.Text, vmDataTreeNode.Value);
+        }
+
+        private void tvDataTreeMenu_CopySub_Click(object sender, RoutedEventArgs e)
+        {
+            var menuItem = (MenuItem)sender;
+            var vmDataTreeNode = (DataTreeNodeViewModel)menuItem.DataContext;
+            //Clipboard.SetData(DataFormats.Text, vmDataTreeNode.Value);
+        }
+
+        private void tvDataTreeMenu_CopyAll_Click(object sender, RoutedEventArgs e)
+        {
+            var menuItem = (MenuItem)sender;
+            var vmDataTreeNode = (DataTreeNodeViewModel)menuItem.DataContext;
+            //Clipboard.SetData(DataFormats.Text, vmDataTreeNode.Value);
         }
     }
 }

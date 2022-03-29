@@ -4,7 +4,7 @@
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:HEXEH.WPF"
-        xmlns:core="clr-namespace:HEXEH.Core;assembly=HEXEH.Core"
+        xmlns:viewmodel="clr-namespace:HEXEH.WPF.ViewModel"
         mc:Ignorable="d"
         Title="HEXEH" Height="750" Width="1200">
     <Grid x:Name="MainGrid">
@@ -59,7 +59,7 @@
                 <GridSplitter Grid.Row="1" Height="3" HorizontalAlignment="Stretch" ResizeBehavior="PreviousAndNext"/>
                 <TreeView x:Name="tvDataTree" Grid.Row="2" FontFamily="Cascadia Mono Light, Consolas">
                     <TreeView.ItemTemplate>
-                        <HierarchicalDataTemplate DataType="{x:Type core:DataTreeNode}" ItemsSource="{Binding Childs}">
+                        <HierarchicalDataTemplate DataType="{x:Type viewmodel:DataTreeNodeViewModel}" ItemsSource="{Binding Childs}">
                             <TextBlock>
                                 <TextBlock.Text>
                                     <MultiBinding StringFormat="{}{0}: {1}">
@@ -67,18 +67,23 @@
                                         <Binding Path="Value"/>
                                     </MultiBinding>
                                 </TextBlock.Text>
+                                <TextBlock.ContextMenu>
+                                    <ContextMenu Focusable="False">
+                                        <MenuItem Header="Copy Item" Focusable="False" Click="tvDataTreeMenu_Copy_Click"/>
+                                        <MenuItem Header="Copy SubTree" Focusable="False" />
+                                        <MenuItem Header="Copy All" Focusable="False" />
+                                    </ContextMenu>
+                                </TextBlock.ContextMenu>
                             </TextBlock>
                         </HierarchicalDataTemplate>
                     </TreeView.ItemTemplate>
-                    <TreeView.ContextMenu>
-                        <ContextMenu>
-                            <MenuItem Command="Copy">
-                                <MenuItem.Icon>
-                                    <Image Source="/HEXEH.WPF;component/res/images/Copy.png"/>
-                                </MenuItem.Icon>
-                            </MenuItem>
-                        </ContextMenu>
-                    </TreeView.ContextMenu>
+                    <TreeView.ItemContainerStyle>
+                        <Style TargetType="{x:Type TreeViewItem}">
+                            <EventSetter Event="PreviewMouseRightButtonDown" Handler="tvDataItem_PreviewMouseRightButtonDown"/>
+                            <Setter Property="IsExpanded" Value="{Binding IsExpanded, Mode=TwoWay}" />
+                            <Setter Property="IsSelected" Value="{Binding IsSelected, Mode=TwoWay}" />
+                        </Style>
+                    </TreeView.ItemContainerStyle>
                 </TreeView>
             </Grid>
         </Grid>
