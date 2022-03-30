@@ -6,6 +6,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
@@ -115,7 +116,9 @@ namespace HEXEH.WPF
                         {
                             _settingMap.Add(settingName[0], 0);
                             var tbSubSettingNumInput = new TextBox();
+                            tbSubSettingNumInput.Resources = new ResourceDictionary { { "SettingName", settingName[0] } };
                             tbSubSettingNumInput.AcceptsReturn = false;
+                            tbSubSettingNumInput.PreviewTextInput += NumberValidationTextBox;
                             tbSubSettingNumInput.TextChanged += tbSubSettingNumInput_TextChanged;
                             stkPanelSubSettings.Children.Add(tbSubSettingNumInput);
                             break;
@@ -124,6 +127,7 @@ namespace HEXEH.WPF
                         {
                             _settingMap.Add(settingName[0], "");
                             var tbSubSettingStrInput = new TextBox();
+                            tbSubSettingStrInput.Resources = new ResourceDictionary { { "SettingName", settingName[0] } };
                             tbSubSettingStrInput.AcceptsReturn = false;
                             tbSubSettingStrInput.TextChanged += tbSubSettingStrInput_TextChanged;
                             stkPanelSubSettings.Children.Add(tbSubSettingStrInput);
@@ -135,17 +139,21 @@ namespace HEXEH.WPF
 
         private void tbSubSettingStrInput_TextChanged(object sender, TextChangedEventArgs e)
         {
-            throw new NotImplementedException();
+            var srcTb = (TextBox)sender;
+            var settingName = (string)srcTb.Resources["SettingName"];
+            _settingMap[settingName] = srcTb.Text;
         }
 
         private void tbSubSettingNumInput_TextChanged(object sender, TextChangedEventArgs e)
         {
-            throw new NotImplementedException();
+            var srcTb = (TextBox)sender;
+            var settingName = (string)srcTb.Resources["SettingName"];
+            _settingMap[settingName] = uint.Parse(srcTb.Text);
         }
 
         private void cbxSubsettingOption_Checked(object sender, RoutedEventArgs e)
         {
-            var srcCbx = (CheckBox)e.Source;
+            var srcCbx = (CheckBox)sender;
             var settingName = (string)srcCbx.Resources["SettingName"];
             var option = (string)srcCbx.Resources["Option"];
             var settingList = (List<string>)_settingMap[settingName];
@@ -154,7 +162,7 @@ namespace HEXEH.WPF
 
         private void cbxSubsettingOption_Unchecked(object sender, RoutedEventArgs e)
         {
-            var srcCbx = (CheckBox)e.Source;
+            var srcCbx = (CheckBox)sender;
             var settingName = (string)srcCbx.Resources["SettingName"];
             var option = (string)srcCbx.Resources["Option"];
             var settingList = (List<string>)_settingMap[settingName]; 
@@ -206,6 +214,12 @@ namespace HEXEH.WPF
         {
             _dwHexDumpLineLength = (uint)e.NewValue;
             if (_bytesInput.Length > 0) UpdateHexDump();
+        }
+
+        private void NumberValidationTextBox(object sender, TextCompositionEventArgs e)
+        {
+            Regex regex = new Regex("[^0-9]+");
+            e.Handled = regex.IsMatch(e.Text);
         }
     }
 }
