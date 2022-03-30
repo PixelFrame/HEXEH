@@ -27,7 +27,7 @@ namespace HEXEH.WPF
                                                     && x.Namespace == @"HEXEH.Core.DataType")
                                                .ToList();
             DataTypeNames = DataTypes.ToDictionary(datatype => datatype.GUID, datatype =>
-             {
+            {
                  var name = datatype.GetProperty("Name").GetValue(null) as string;
                  var description = datatype.GetProperty("Description").GetValue(null) as string;
                  return $"{name}: {description}";
@@ -38,9 +38,24 @@ namespace HEXEH.WPF
         {
             var selectedType = DataTypes.FirstOrDefault(x => x.GUID == classId);
             if (selectedType == null) return new DataTree("Null", "Null");
-            var convertedObj = (IDataType?)selectedType.GetMethod("ConvertFromBytes").Invoke(null, new object[] { blob, settingMap });
-            if (convertedObj == null) return new DataTree("Null", "Null");
-            return convertedObj.ToDataTree();
+            try
+            {
+                var convertedObj = (IDataType?)selectedType.GetMethod("ConvertFromBytes").Invoke(null, new object[] { blob, settingMap });
+                if (convertedObj == null) return new DataTree("Null", "Null");
+                return convertedObj.ToDataTree();
+            } 
+            catch (Exception ex)
+            {
+                var dtEx = new DataTree("Conversion Failed", "");
+                dtEx.Head.Childs.Add(new DataTreeNode("Exception", ex.Message));
+                while(ex.InnerException != null)
+                {
+                    ex = ex.InnerException;
+                    dtEx.Head.Childs.Add(new DataTreeNode("Exception", ex.Message));
+                }
+
+                return dtEx;
+            }
         }
 
         internal Dictionary<string, List<string>?>? GetSettingMap(Guid classId)
