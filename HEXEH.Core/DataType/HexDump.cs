@@ -30,8 +30,8 @@ namespace HEXEH.Core.DataType
 
         public HexDump(byte[] blob, uint lineLength)
         {
-            Blob = blob;
             _lineLength = lineLength;
+            Blob = blob;
         }
 
         private void DoConvertFromBytes(uint lineLength)

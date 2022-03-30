@@ -28,6 +28,8 @@ namespace HEXEH.WPF
         private static Guid _selectedType = Guid.Empty;
         private static Dictionary<string, object>? _settingMap = null;
         private DataTreeViewModel? _vmDataTree = null;
+        private uint _dwHexDumpLineLength = 16;
+        private byte[] _bytesInput = Array.Empty<byte>();
 
         public MainWindow()
         {
@@ -41,16 +43,22 @@ namespace HEXEH.WPF
         private void btnGo_Click(object sender, RoutedEventArgs e)
         {
             var rawInput = tbInput.Text;
-            var bytesInput = Common.StringToBytes(rawInput);
-            if(bytesInput.Length == 0)
+            _bytesInput = Common.StringToBytes(rawInput);
+            if(_bytesInput.Length == 0)
             {
                 MessageBox.Show("Invalid HEX input!", "Warning", MessageBoxButton.OK, MessageBoxImage.Exclamation);
+                return;
             }
-            var hdInput = HexDump.ConvertFromBytes(bytesInput, new Dictionary<string, object>() { { "LineLength", (uint)16 } });
+            UpdateHexDump();
+        }
+
+        private void UpdateHexDump()
+        {
+            var hdInput = HexDump.ConvertFromBytes(_bytesInput, new Dictionary<string, object>() { { "LineLength", _dwHexDumpLineLength } });
             tbkHexDumpLeft.Text = hdInput.LineNum;
             tbHexDumpMid.Text = hdInput.FormattedHex;
             tbHexDumpRight.Text = hdInput.FormattedChars;
-            DataConversion(bytesInput);
+            DataConversion(_bytesInput);
         }
 
         private void cbbDataType_SelectionChanged(object sender, SelectionChangedEventArgs e)
@@ -58,6 +66,7 @@ namespace HEXEH.WPF
             stkPanelSubSettings.Children.Clear();
             if (cbbDataType.SelectedValue == null || cbbDataType.SelectedValuePath != "Key") return;
             _selectedType = (Guid)cbbDataType.SelectedValue;
+            if (_selectedType == new Guid("37d68d01-f2ab-4674-9f8f-11e942d49abb")) return;
 
             var settingMap = _converter.GetSettingMap(_selectedType);
             if (settingMap == null) return;
@@ -191,6 +200,12 @@ namespace HEXEH.WPF
             var menuItem = (MenuItem)sender;
             var vmDataTreeNode = (DataTreeNodeViewModel)menuItem.DataContext;
             Clipboard.SetText(vmDataTreeNode.ToTreeText());
+        }
+
+        private void sldHexDumpLineNum_ValueChanged(object sender, RoutedPropertyChangedEventArgs<double> e)
+        {
+            _dwHexDumpLineLength = (uint)e.NewValue;
+            if (_bytesInput.Length > 0) UpdateHexDump();
         }
     }
 }
