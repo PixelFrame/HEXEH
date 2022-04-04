@@ -29,19 +29,29 @@ namespace HEXEH.Core.Helper.Windows
                 case DNSType.MR:
                 case DNSType.PTR:
                 case DNSType.DNAME:
-                    var RR_NAME = (NAME)Marshal.PtrToStructure(handle.AddrOfPinnedObject(), typeof(NAME));
+                    var nameMarsharler = new DnsNameMarshaler();
+                    var RR_NAME = (NAME)nameMarsharler.MarshalNativeToManaged(handle.AddrOfPinnedObject());
                     return RR_NAME.GetDataTreeNode();
                 case DNSType.SOA:
-                    var RR_SOA = (SOA)Marshal.PtrToStructure(handle.AddrOfPinnedObject(), typeof(SOA));
+                    var SOAMarsharler = new DnsSoaMarshaler();
+                    var RR_SOA = (SOA)SOAMarsharler.MarshalNativeToManaged(handle.AddrOfPinnedObject());
                     return RR_SOA.GetDataTreeNode();
                 case DNSType.SRV:
-                    var RR_SRV = (SRV)Marshal.PtrToStructure(handle.AddrOfPinnedObject(),typeof(SRV));
+                    var SRVMarsharler = new DnsSrvMarsharler();
+                    var RR_SRV = (SRV)SRVMarsharler.MarshalNativeToManaged(handle.AddrOfPinnedObject());
                     return RR_SRV.GetDataTreeNode();
                 case DNSType.TXT:
                 case DNSType.X25:
                 case DNSType.ISDN:
-                    var RR_TXT = (TXT)Marshal.PtrToStructure(handle.AddrOfPinnedObject(),typeof (TXT));
+                    var TXTMarsharler = new DnsTxtMarsharler();
+                    var RR_TXT = (TXT)TXTMarsharler.MarshalNativeToManaged(handle.AddrOfPinnedObject());
                     return RR_TXT.GetDataTreeNode();
+                case DNSType.MX:
+                case DNSType.AFSDB:
+                case DNSType.RT:
+                    var namePrefMarsharler = new DnsNamePreferenceMarsharler();
+                    var RR_MX = (NAME_PREFERENCE)namePrefMarsharler.MarshalNativeToManaged(handle.AddrOfPinnedObject());
+                    return RR_MX.GetDataTreeNode();
                 default:
                     return new DataTreeNode($"DNS Type {type}", "Unsupported");
             }
@@ -338,8 +348,8 @@ namespace HEXEH.Core.Helper.Windows
     public struct SRV
     {
         public ushort wPriority;
-        public uint wWeight;
-        public uint wPort;
+        public ushort wWeight;
+        public ushort wPort;
         public NAME nameTarget;
         
         public override string ToString()
@@ -396,6 +406,189 @@ namespace HEXEH.Core.Helper.Windows
             dtn.Childs.Add(new DataTreeNode("Exchange", "", nameExchange.GetDataTreeNode()));
 
             return dtn;
+        }
+    }
+
+    public class DnsNameMarshaler : ICustomMarshaler
+    {
+        public void CleanUpManagedData(object ManagedObj)
+        { }
+
+        public void CleanUpNativeData(IntPtr pNativeData)
+        {
+            Marshal.FreeHGlobal(pNativeData);
+        }
+
+        public int GetNativeDataSize()
+        {
+            return -1;
+        }
+
+        public IntPtr MarshalManagedToNative(object ManagedObj)
+        {
+            throw new NotImplementedException();
+        }
+
+        public object MarshalNativeToManaged(IntPtr pNativeData)
+        {
+            var obj = new NAME();
+            obj.bLength = Marshal.ReadByte(pNativeData);
+            pNativeData += 1;
+            obj.bNameCount = Marshal.ReadByte(pNativeData);
+            pNativeData += 1;
+            obj.NameSegs = new NAME.NameSeg[obj.bNameCount];
+
+            for (int i = 0; i < obj.bNameCount; i++)
+            {
+                obj.NameSegs[i] = new NAME.NameSeg();
+                obj.NameSegs[i].dwSegLength = (uint)Marshal.ReadInt32(pNativeData);
+                pNativeData += 4;
+                obj.NameSegs[i].strSegName = Marshal.PtrToStringUTF8(pNativeData, (int)obj.NameSegs[i].dwSegLength);
+                pNativeData += (int)obj.NameSegs[i].dwSegLength;
+            }
+
+            return obj;
+        }
+    }
+
+    public class DnsSoaMarshaler : ICustomMarshaler
+    {
+        public void CleanUpManagedData(object ManagedObj)
+        { }
+
+        public void CleanUpNativeData(IntPtr pNativeData)
+        {
+            Marshal.FreeHGlobal(pNativeData);
+        }
+
+        public int GetNativeDataSize()
+        {
+            return -1;
+        }
+
+        public IntPtr MarshalManagedToNative(object ManagedObj)
+        {
+            throw new NotImplementedException();
+        }
+
+        public object MarshalNativeToManaged(IntPtr pNativeData)
+        {
+            var obj = new SOA();
+            obj.dwSerialNo = (uint)Marshal.ReadInt32(pNativeData);
+            pNativeData += 4;
+            obj.dwRefresh = (uint)Marshal.ReadInt32(pNativeData);
+            pNativeData += 4;
+            obj.dwRetry = (uint)Marshal.ReadInt32(pNativeData);
+            pNativeData += 4;
+            obj.dwExpire = (uint)Marshal.ReadInt32(pNativeData);
+            pNativeData += 4;
+            obj.dwMinimumTtl = (uint)Marshal.ReadInt32(pNativeData);
+            pNativeData += 4;
+            var nameMarshaler = new DnsNameMarshaler();
+            obj.namePrimaryServer = (NAME)nameMarshaler.MarshalNativeToManaged(pNativeData);
+            pNativeData += obj.namePrimaryServer.bLength;
+            obj.nameZoneAdministratorEmail = (NAME)nameMarshaler.MarshalNativeToManaged(pNativeData);
+
+            return obj;
+        }
+    }
+
+    public class DnsSrvMarsharler : ICustomMarshaler
+    {
+        public void CleanUpManagedData(object ManagedObj)
+        { }
+
+        public void CleanUpNativeData(IntPtr pNativeData)
+        {
+            Marshal.FreeHGlobal(pNativeData);
+        }
+
+        public int GetNativeDataSize()
+        {
+            return -1;
+        }
+
+        public IntPtr MarshalManagedToNative(object ManagedObj)
+        {
+            throw new NotImplementedException();
+        }
+
+        public object MarshalNativeToManaged(IntPtr pNativeData)
+        {
+            var obj = new SRV();
+            obj.wPriority = (ushort)Marshal.ReadInt16(pNativeData);
+            pNativeData += 2;
+            obj.wWeight = (ushort)Marshal.ReadInt16(pNativeData);
+            pNativeData += 2;
+            obj.wPort = (ushort)Marshal.ReadInt16(pNativeData);
+            pNativeData += 2;
+            var nameMarshaler = new DnsNameMarshaler();
+            obj.nameTarget = (NAME)nameMarshaler.MarshalNativeToManaged(pNativeData);
+            
+            return obj;
+        }
+    }
+
+    public class DnsTxtMarsharler : ICustomMarshaler
+    {
+        public void CleanUpManagedData(object ManagedObj)
+        { }
+
+        public void CleanUpNativeData(IntPtr pNativeData)
+        {
+            Marshal.FreeHGlobal(pNativeData);
+        }
+
+        public int GetNativeDataSize()
+        {
+            return -1;
+        }
+
+        public IntPtr MarshalManagedToNative(object ManagedObj)
+        {
+            throw new NotImplementedException();
+        }
+
+        public object MarshalNativeToManaged(IntPtr pNativeData)
+        {
+            var obj = new TXT();
+            obj.bLength = Marshal.ReadByte(pNativeData);
+            pNativeData += 1;
+            obj.strText = Marshal.PtrToStringUTF8(pNativeData, obj.bLength);
+
+            return obj;
+        }
+    }
+
+    public class DnsNamePreferenceMarsharler : ICustomMarshaler
+    {
+        public void CleanUpManagedData(object ManagedObj)
+        { }
+
+        public void CleanUpNativeData(IntPtr pNativeData)
+        {
+            Marshal.FreeHGlobal(pNativeData);
+        }
+
+        public int GetNativeDataSize()
+        {
+            return -1;
+        }
+
+        public IntPtr MarshalManagedToNative(object ManagedObj)
+        {
+            throw new NotImplementedException();
+        }
+
+        public object MarshalNativeToManaged(IntPtr pNativeData)
+        {
+            var obj = new NAME_PREFERENCE();
+            obj.wPriority = (ushort)Marshal.ReadInt16(pNativeData);
+            pNativeData += 2;
+            var nameMarshaler = new DnsNameMarshaler();
+            obj.nameExchange = (NAME)nameMarshaler.MarshalNativeToManaged(pNativeData);
+
+            return obj;
         }
     }
 }
