@@ -25,13 +25,29 @@ namespace HEXEH.Core
     {
         public string Label { get; set; } = "";
         public string Value { get; set; } = "";
-        public ObservableCollection<DataTreeNode> Childs { get; set; } = new();
+        public List<DataTreeNode> Childs { get; set; } = new();
 
         public DataTreeNode() { }
         public DataTreeNode(string lable, string value)
         {
             Label = lable;
             Value = value;
+        }
+        public DataTreeNode(string lable, string value, DataTreeNode child)
+        {
+            Label = lable;
+            Value = value;
+            Childs = new List<DataTreeNode>
+            {
+                child
+            };
+        }
+        public DataTreeNode(string lable, string value, DataTreeNode[] childs)
+        {
+            Label = lable;
+            Value = value;
+            Childs = new List<DataTreeNode>();
+            Childs.AddRange(childs);
         }
     }
 }
