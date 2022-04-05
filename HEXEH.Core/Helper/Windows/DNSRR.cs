@@ -1,4 +1,5 @@
-﻿using System;
+﻿using HEXEH.Core.Utility;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.InteropServices;
@@ -9,7 +10,7 @@ namespace HEXEH.Core.Helper.Windows
 {
     public static class DNSRR
     {
-        public static DataTreeNode GetDnsRRNode(byte[] blob, DNSType type)
+        public static DataTreeNode ToDataTreeNode(byte[] blob, DNSType type)
         {
             var handle = GCHandle.Alloc(blob, GCHandleType.Pinned);
             switch (type)
@@ -37,19 +38,19 @@ namespace HEXEH.Core.Helper.Windows
                     var RR_SOA = (SOA)SOAMarsharler.MarshalNativeToManaged(handle.AddrOfPinnedObject());
                     return RR_SOA.GetDataTreeNode();
                 case DNSType.SRV:
-                    var SRVMarsharler = new DnsSrvMarsharler();
+                    var SRVMarsharler = new DnsSrvMarshaler();
                     var RR_SRV = (SRV)SRVMarsharler.MarshalNativeToManaged(handle.AddrOfPinnedObject());
                     return RR_SRV.GetDataTreeNode();
                 case DNSType.TXT:
                 case DNSType.X25:
                 case DNSType.ISDN:
-                    var TXTMarsharler = new DnsTxtMarsharler();
+                    var TXTMarsharler = new DnsTxtMarshaler();
                     var RR_TXT = (TXT)TXTMarsharler.MarshalNativeToManaged(handle.AddrOfPinnedObject());
                     return RR_TXT.GetDataTreeNode();
                 case DNSType.MX:
                 case DNSType.AFSDB:
                 case DNSType.RT:
-                    var namePrefMarsharler = new DnsNamePreferenceMarsharler();
+                    var namePrefMarsharler = new DnsNamePreferenceMarshaler();
                     var RR_MX = (NAME_PREFERENCE)namePrefMarsharler.MarshalNativeToManaged(handle.AddrOfPinnedObject());
                     return RR_MX.GetDataTreeNode();
                 default:
@@ -278,7 +279,7 @@ namespace HEXEH.Core.Helper.Windows
 
         public struct NameSeg
         {
-            public uint dwSegLength;
+            public byte bSegLength;
             public string strSegName;
         }
 
@@ -294,7 +295,7 @@ namespace HEXEH.Core.Helper.Windows
             foreach (var seg in NameSegs)
             {
                 sb.Append('(');
-                sb.Append(seg.dwSegLength);
+                sb.Append(seg.bSegLength);
                 sb.Append(')');
                 sb.Append(seg.strSegName);
             }
@@ -308,7 +309,7 @@ namespace HEXEH.Core.Helper.Windows
             dtn.Childs.Add(new DataTreeNode("Name Count", bNameCount.ToString()));
             foreach (var seg in NameSegs)
             {
-                dtn.Childs.Add(new DataTreeNode("Name Length", seg.dwSegLength.ToString()));
+                dtn.Childs.Add(new DataTreeNode("Name Length", seg.bSegLength.ToString()));
                 dtn.Childs.Add(new DataTreeNode("Name", seg.strSegName));
             }
             return dtn;
@@ -441,10 +442,10 @@ namespace HEXEH.Core.Helper.Windows
             for (int i = 0; i < obj.bNameCount; i++)
             {
                 obj.NameSegs[i] = new NAME.NameSeg();
-                obj.NameSegs[i].dwSegLength = (uint)Marshal.ReadInt32(pNativeData);
-                pNativeData += 4;
-                obj.NameSegs[i].strSegName = Marshal.PtrToStringUTF8(pNativeData, (int)obj.NameSegs[i].dwSegLength);
-                pNativeData += (int)obj.NameSegs[i].dwSegLength;
+                obj.NameSegs[i].bSegLength = Marshal.ReadByte(pNativeData);
+                pNativeData += 1;
+                obj.NameSegs[i].strSegName = Marshal.PtrToStringUTF8(pNativeData, (int)obj.NameSegs[i].bSegLength);
+                pNativeData += (int)obj.NameSegs[i].bSegLength;
             }
 
             return obj;
@@ -474,26 +475,26 @@ namespace HEXEH.Core.Helper.Windows
         public object MarshalNativeToManaged(IntPtr pNativeData)
         {
             var obj = new SOA();
-            obj.dwSerialNo = (uint)Marshal.ReadInt32(pNativeData);
+            obj.dwSerialNo = MarshalEx.ReadUInt32BE(pNativeData);
             pNativeData += 4;
-            obj.dwRefresh = (uint)Marshal.ReadInt32(pNativeData);
+            obj.dwRefresh = MarshalEx.ReadUInt32BE(pNativeData);
             pNativeData += 4;
-            obj.dwRetry = (uint)Marshal.ReadInt32(pNativeData);
+            obj.dwRetry = MarshalEx.ReadUInt32BE(pNativeData);
             pNativeData += 4;
-            obj.dwExpire = (uint)Marshal.ReadInt32(pNativeData);
+            obj.dwExpire = MarshalEx.ReadUInt32BE(pNativeData);
             pNativeData += 4;
-            obj.dwMinimumTtl = (uint)Marshal.ReadInt32(pNativeData);
+            obj.dwMinimumTtl = MarshalEx.ReadUInt32BE(pNativeData);
             pNativeData += 4;
             var nameMarshaler = new DnsNameMarshaler();
             obj.namePrimaryServer = (NAME)nameMarshaler.MarshalNativeToManaged(pNativeData);
-            pNativeData += obj.namePrimaryServer.bLength;
+            pNativeData += obj.namePrimaryServer.bLength + 2;
             obj.nameZoneAdministratorEmail = (NAME)nameMarshaler.MarshalNativeToManaged(pNativeData);
 
             return obj;
         }
     }
 
-    public class DnsSrvMarsharler : ICustomMarshaler
+    public class DnsSrvMarshaler : ICustomMarshaler
     {
         public void CleanUpManagedData(object ManagedObj)
         { }
@@ -516,11 +517,11 @@ namespace HEXEH.Core.Helper.Windows
         public object MarshalNativeToManaged(IntPtr pNativeData)
         {
             var obj = new SRV();
-            obj.wPriority = (ushort)Marshal.ReadInt16(pNativeData);
+            obj.wPriority = MarshalEx.ReadUInt16BE(pNativeData);
             pNativeData += 2;
-            obj.wWeight = (ushort)Marshal.ReadInt16(pNativeData);
+            obj.wWeight = MarshalEx.ReadUInt16BE(pNativeData);
             pNativeData += 2;
-            obj.wPort = (ushort)Marshal.ReadInt16(pNativeData);
+            obj.wPort = MarshalEx.ReadUInt16BE(pNativeData);
             pNativeData += 2;
             var nameMarshaler = new DnsNameMarshaler();
             obj.nameTarget = (NAME)nameMarshaler.MarshalNativeToManaged(pNativeData);
@@ -529,7 +530,7 @@ namespace HEXEH.Core.Helper.Windows
         }
     }
 
-    public class DnsTxtMarsharler : ICustomMarshaler
+    public class DnsTxtMarshaler : ICustomMarshaler
     {
         public void CleanUpManagedData(object ManagedObj)
         { }
@@ -560,7 +561,7 @@ namespace HEXEH.Core.Helper.Windows
         }
     }
 
-    public class DnsNamePreferenceMarsharler : ICustomMarshaler
+    public class DnsNamePreferenceMarshaler : ICustomMarshaler
     {
         public void CleanUpManagedData(object ManagedObj)
         { }
@@ -583,7 +584,7 @@ namespace HEXEH.Core.Helper.Windows
         public object MarshalNativeToManaged(IntPtr pNativeData)
         {
             var obj = new NAME_PREFERENCE();
-            obj.wPriority = (ushort)Marshal.ReadInt16(pNativeData);
+            obj.wPriority = MarshalEx.ReadUInt16BE(pNativeData);
             pNativeData += 2;
             var nameMarshaler = new DnsNameMarshaler();
             obj.nameExchange = (NAME)nameMarshaler.MarshalNativeToManaged(pNativeData);

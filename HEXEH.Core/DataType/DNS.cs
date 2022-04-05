@@ -15,16 +15,8 @@ namespace HEXEH.Core.DataType
         {
             { "Type#single", new List<string>() { "A", "AAAA", "NS, MD, MF, CNAME, MB, MG, MR, PTR, DNAME", "SOA", "SRV", "MX, AFSDB, RT", "TXT, X25, ISDN" } },
         };
-        private byte[] _blob = Array.Empty<byte>();
         private DNSType _type = 0;
-        public byte[] Blob
-        {
-            get => _blob; 
-            set 
-            { 
-                _blob = value;
-            }
-        }
+        public byte[] Blob { get; set; } = Array.Empty<byte>();
 
         public static DNS ConvertFromBytes(byte[] blob, Dictionary<string,object>? settingMap)
         {
@@ -54,7 +46,7 @@ namespace HEXEH.Core.DataType
         public DataTree ToDataTree()
         {
             var dt = new DataTree(Name, Description);
-            dt.Head.Childs.Add(DNSRR.GetDnsRRNode(_blob, _type));
+            dt.Head.Childs.Add(DNSRR.ToDataTreeNode(Blob, _type));
             return dt;
         }
     }
