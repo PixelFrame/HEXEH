@@ -27,6 +27,7 @@ namespace HEXEH.Core.Helper.Windows
             var handle = GCHandle.Alloc(blob, GCHandleType.Pinned);
             var recordMarshaler = new DnsRecordMarshaler();
             var record = (DNS_RECORD)recordMarshaler.MarshalNativeToManaged(handle.AddrOfPinnedObject());
+            handle.Free();
 
             var nodes = new DataTreeNode[10];
             nodes[0] = new DataTreeNode("DataLength", record.DataLength.ToString());

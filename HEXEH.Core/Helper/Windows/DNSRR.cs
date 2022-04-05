@@ -17,9 +17,11 @@ namespace HEXEH.Core.Helper.Windows
             {
                 case DNSType.A: 
                     var RR_A = (A)Marshal.PtrToStructure(handle.AddrOfPinnedObject(), typeof(A));
+                    handle.Free();
                     return RR_A.GetDataTreeNode();
                 case DNSType.AAAA:
                     var RR_AAAA = (AAAA)Marshal.PtrToStructure(handle.AddrOfPinnedObject(), typeof(AAAA));
+                    handle.Free();
                     return RR_AAAA.GetDataTreeNode();
                 case DNSType.NS:
                 case DNSType.MD:
@@ -32,28 +34,34 @@ namespace HEXEH.Core.Helper.Windows
                 case DNSType.DNAME:
                     var nameMarsharler = new DnsNameMarshaler();
                     var RR_NAME = (NAME)nameMarsharler.MarshalNativeToManaged(handle.AddrOfPinnedObject());
+                    handle.Free();
                     return RR_NAME.GetDataTreeNode();
                 case DNSType.SOA:
                     var SOAMarsharler = new DnsSoaMarshaler();
                     var RR_SOA = (SOA)SOAMarsharler.MarshalNativeToManaged(handle.AddrOfPinnedObject());
+                    handle.Free();
                     return RR_SOA.GetDataTreeNode();
                 case DNSType.SRV:
                     var SRVMarsharler = new DnsSrvMarshaler();
                     var RR_SRV = (SRV)SRVMarsharler.MarshalNativeToManaged(handle.AddrOfPinnedObject());
+                    handle.Free();
                     return RR_SRV.GetDataTreeNode();
                 case DNSType.TXT:
                 case DNSType.X25:
                 case DNSType.ISDN:
                     var TXTMarsharler = new DnsTxtMarshaler();
                     var RR_TXT = (TXT)TXTMarsharler.MarshalNativeToManaged(handle.AddrOfPinnedObject());
+                    handle.Free();
                     return RR_TXT.GetDataTreeNode();
                 case DNSType.MX:
                 case DNSType.AFSDB:
                 case DNSType.RT:
                     var namePrefMarsharler = new DnsNamePreferenceMarshaler();
                     var RR_MX = (NAME_PREFERENCE)namePrefMarsharler.MarshalNativeToManaged(handle.AddrOfPinnedObject());
+                    handle.Free();
                     return RR_MX.GetDataTreeNode();
                 default:
+                    handle.Free();
                     return new DataTreeNode($"DNS Type {type}", "Unsupported");
             }
         }
