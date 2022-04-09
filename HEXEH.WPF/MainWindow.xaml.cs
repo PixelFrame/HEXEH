@@ -93,6 +93,7 @@ namespace HEXEH.WPF
                                 rbSubsettingOption.Checked += rbSubsettingOption_Checked;
                                 stkPanelSubSettings.Children.Add(rbSubsettingOption);
                             }
+                            ((RadioButton)stkPanelSubSettings.Children[1]).IsChecked = true;
                             break;
                         }
                     case ("multi"):

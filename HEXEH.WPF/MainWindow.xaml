@@ -6,7 +6,7 @@
         xmlns:local="clr-namespace:HEXEH.WPF"
         xmlns:viewmodel="clr-namespace:HEXEH.WPF.ViewModel"
         mc:Ignorable="d"
-        Title="HEXEH" Height="750" Width="1200">
+        Title="HEXEH" Height="750" Width="1200" Icon="/icon.png">
     <Grid x:Name="MainGrid">
         <Grid.RowDefinitions>
             <RowDefinition Height="20" />
@@ -44,28 +44,30 @@
                     <RowDefinition Height="3"/>
                     <RowDefinition Height="*"/>
                 </Grid.RowDefinitions>
-                <ScrollViewer Grid.Row="0">
                     <Grid>
-                        <Grid.RowDefinitions>
-                            <RowDefinition Height="*"/>
-                            <RowDefinition Height="20"/>
-                        </Grid.RowDefinitions>
-                        <Grid.ColumnDefinitions>
-                            <ColumnDefinition Width="70"/>
-                            <ColumnDefinition Width="4*"/>
-                            <ColumnDefinition Width="2*"/>
-                        </Grid.ColumnDefinitions>
-                        <TextBlock x:Name="tbkHexDumpLeft" Grid.Column="0" TextWrapping="NoWrap" Background="#FFECECEC" FontFamily="Cascadia Mono Light, Consolas" TextAlignment="Right"></TextBlock>
-                        <TextBox x:Name="tbHexDumpMid" Grid.Column="1" TextWrapping="NoWrap" Background="WhiteSmoke" FontFamily="Cascadia Mono Light, Consolas" IsReadOnly="True" BorderBrush="{x:Null}" ></TextBox>
-                        <TextBox x:Name="tbHexDumpRight" Grid.Column="2" TextWrapping="NoWrap" FontFamily="Cascadia Mono Light, Consolas" IsReadOnly="True" BorderBrush="{x:Null}" ></TextBox>
-                        <Rectangle Grid.Row="1" Grid.ColumnSpan="3" Fill="WhiteSmoke" />
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="*"/>
+                        <RowDefinition Height="20"/>
+                    </Grid.RowDefinitions>
+                    <ScrollViewer Grid.Row="0">
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="70"/>
+                                <ColumnDefinition Width="4*"/>
+                                <ColumnDefinition Width="2*"/>
+                            </Grid.ColumnDefinitions>
+                            <TextBlock x:Name="tbkHexDumpLeft" Grid.Column="0" TextWrapping="NoWrap" Background="#FFECECEC" FontFamily="Cascadia Mono Light, Consolas" TextAlignment="Right"></TextBlock>
+                            <TextBox x:Name="tbHexDumpMid" Grid.Column="1" TextWrapping="NoWrap" Background="WhiteSmoke" FontFamily="Cascadia Mono Light, Consolas" IsReadOnly="True" BorderBrush="{x:Null}" ></TextBox>
+                            <TextBox x:Name="tbHexDumpRight" Grid.Column="2" TextWrapping="NoWrap" FontFamily="Cascadia Mono Light, Consolas" IsReadOnly="True" BorderBrush="{x:Null}" ></TextBox>
+                        </Grid>
+                    </ScrollViewer>
+                    <Rectangle Grid.Row="1" Grid.ColumnSpan="3" Fill="WhiteSmoke" />
                         <StackPanel Orientation="Horizontal" Grid.Row="1" Grid.ColumnSpan="3" HorizontalAlignment="Right">
                             <TextBlock Text="Line Length 16"/>
                             <Slider x:Name="sldHexDumpLineNum" Minimum="16" Maximum="64" Margin="5,0,5,0" Width="100" TickFrequency="1" IsSnapToTickEnabled="True" ValueChanged="sldHexDumpLineNum_ValueChanged"/>
                             <TextBlock Text="64"/>
                         </StackPanel>
                     </Grid>
-                </ScrollViewer>
                 <GridSplitter Grid.Row="1" Height="3" HorizontalAlignment="Stretch" ResizeBehavior="PreviousAndNext"/>
                 <TreeView x:Name="tvDataTree" ItemsSource="{Binding Head}" Grid.Row="2" FontFamily="Cascadia Mono Light, Consolas">
                     <TreeView.ItemTemplate>
