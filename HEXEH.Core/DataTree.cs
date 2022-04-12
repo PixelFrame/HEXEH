@@ -49,5 +49,32 @@ namespace HEXEH.Core
             Childs = new List<DataTreeNode>();
             Childs.AddRange(childs);
         }
+
+        public override string ToString()
+        {
+            var sbResult = new StringBuilder();
+            printNode("", true, true, ref sbResult);
+
+            return sbResult.ToString();
+        }
+
+        private void printNode(string indent, bool root, bool last, ref StringBuilder sbResult)
+        {
+            sbResult.Append(indent);
+            if (root) { }
+            else if (last)
+            {
+                sbResult.Append(@"└─");
+                indent += "  ";
+            }
+            else
+            {
+                sbResult.Append(@"├─");
+                indent += "│ ";
+            }
+            sbResult.AppendLine($"{Label}: {Value}");
+            for (int i = 0; i < Childs.Count; i++)
+                Childs[i].printNode(indent, false, i == Childs.Count - 1, ref sbResult);
+        }
     }
 }
