@@ -10,10 +10,10 @@ namespace HEXEH.Core.DataType
     public class DNS : IDataType
     {
         public static string Name { get; } = "DNS Resource Record";
-        public static string Description { get; } = "Data of a DNS resource record";
+        public static string Description { get; } = "";
         public static Dictionary<string, List<string>?>? SettingMap { get; } = new Dictionary<string, List<string>?>()
         {
-            { "Type#single", new List<string>() { "A", "AAAA", "NS, MD, MF, CNAME, MB, MG, MR, PTR, DNAME", "SOA", "SRV", "MX, AFSDB, RT", "TXT, X25, ISDN" } },
+            { "RR Type#single", new List<string>() { "A", "AAAA", "NS/MD/MF/CNAME/MB/MG/MR/PTR/DNAME", "SOA", "SRV", "MX/AFSDB/RT", "TXT/X25/ISDN" } },
         };
         private DNSType _type = 0;
         public byte[] Blob { get; set; } = Array.Empty<byte>();
@@ -22,8 +22,8 @@ namespace HEXEH.Core.DataType
         {
             var dns = new DNS();
             dns.Blob = blob;
-
-            var selectedType = (string)settingMap["Type"];
+            if (settingMap == null) return dns;
+            var selectedType = (string)settingMap["RR Type"];
 
             switch (selectedType)
             {

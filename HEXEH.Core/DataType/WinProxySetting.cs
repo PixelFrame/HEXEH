@@ -11,8 +11,8 @@ namespace HEXEH.Core.DataType
     [Guid("da318e95-9586-44f3-9a03-ae07a4d42b12")]
     public class WinProxySetting : IDataType
     {
-        public static string Name { get; } = "Windows Proxy";
-        public static string Description { get; } = "Proxy Setting of Windows";
+        public static string Name { get; } = "Windows Proxy Setting";
+        public static string Description { get; } = "";
         public static Dictionary<string, List<string>?>? SettingMap { get; } = null;
 
         private byte[] _blob = Array.Empty<byte>();
