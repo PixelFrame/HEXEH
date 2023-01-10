@@ -1,8 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using System.Text;
 
 namespace HEXEH.Core.DataType
 {
@@ -17,8 +13,8 @@ namespace HEXEH.Core.DataType
         public Dictionary<string, List<string>>? InputSettingMap { get; set; } = null;
         private byte[] _blob = Array.Empty<byte>();
         public byte[] Blob
-        { 
-            get { return _blob; } 
+        {
+            get { return _blob; }
             set
             {
                 _blob = value;
@@ -67,7 +63,7 @@ namespace HEXEH.Core.DataType
         public DataTree ToDataTree()
         {
             var tree = new DataTree(Name, Description);
-            foreach(var str in convertedStrings)
+            foreach (var str in convertedStrings)
             {
                 tree.Head.Childs.Add(new DataTreeNode(str.Key, str.Value));
             }

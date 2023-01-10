@@ -52,7 +52,8 @@ namespace HEXEH.Core.DataType
                     line.Append('\n');
                     line.Append(count.ToString("X8"));
                     chars.Append('\n');
-                } else
+                }
+                else
                 {
                     hex.Append(' ');
                 }
@@ -66,7 +67,7 @@ namespace HEXEH.Core.DataType
         public static HexDump ConvertFromBytes(byte[] blob, Dictionary<string, object>? settingMap)
         {
             if (settingMap == null) return new HexDump(blob, 16);
-            var lineLength = (uint) settingMap["LineLength"];
+            var lineLength = (uint)settingMap["LineLength"];
             return new HexDump(blob, lineLength);
         }
 
@@ -80,7 +81,7 @@ namespace HEXEH.Core.DataType
             throw new NotImplementedException();
         }
 
-        public static Dictionary<string, List<string>?>? SettingMap { get; } = new Dictionary<string, List<string>?>() 
+        public static Dictionary<string, List<string>?>? SettingMap { get; } = new Dictionary<string, List<string>?>()
         {
             {"LineLength#num#1", null }
         };

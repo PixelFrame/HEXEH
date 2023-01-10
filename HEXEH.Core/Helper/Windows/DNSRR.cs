@@ -1,10 +1,6 @@
 ﻿using HEXEH.Core.Utility;
-using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Runtime.InteropServices;
 using System.Text;
-using System.Threading.Tasks;
 
 namespace HEXEH.Core.Helper.Windows
 {
@@ -15,7 +11,7 @@ namespace HEXEH.Core.Helper.Windows
             var handle = GCHandle.Alloc(blob, GCHandleType.Pinned);
             switch (type)
             {
-                case DNSType.A: 
+                case DNSType.A:
                     var RR_A = (A)Marshal.PtrToStructure(handle.AddrOfPinnedObject(), typeof(A));
                     handle.Free();
                     return RR_A.GetDataTreeNode();
@@ -69,48 +65,48 @@ namespace HEXEH.Core.Helper.Windows
 
     public enum DNSType : ushort
     {
-        ZERO    = 0x0,
-        A       = 0x1,
-        NS      = 0x2,
-        MD      = 0x3,
-        MF      = 0x4,
-        CNAME   = 0x5,
-        SOA     = 0x6,
-        MB      = 0x7,
-        MG      = 0x8,
-        MR      = 0x9,
-        NULL    = 0xA,
-        WKS     = 0xB,
-        PTR     = 0xC,
-        HINFO   = 0xD,
-        MINFO   = 0xE,
-        MX      = 0xF,
-        TXT     = 0x10,
-        RP      = 0x11,
-        AFSDB   = 0x12,
-        X25     = 0x13,
-        ISDN    = 0x14,
-        RT      = 0x15,
-        SIG     = 0x18,
-        KEY     = 0x19,
-        AAAA    = 0x1C,
-        LOC     = 0x1D,
-        NXT     = 0x1E,
-        SRV     = 0x21,
-        ATMA    = 0x22,
-        NAPTR   = 0x23,
-        DNAME   = 0x27,
-        DS      = 0x2B,
-        RRSIG   = 0x2E,
-        NSEC    = 0x2F,
-        DNSKEY  = 0x30,
-        DHCID   = 0x31,
-        NSEC3   = 0x32,
+        ZERO = 0x0,
+        A = 0x1,
+        NS = 0x2,
+        MD = 0x3,
+        MF = 0x4,
+        CNAME = 0x5,
+        SOA = 0x6,
+        MB = 0x7,
+        MG = 0x8,
+        MR = 0x9,
+        NULL = 0xA,
+        WKS = 0xB,
+        PTR = 0xC,
+        HINFO = 0xD,
+        MINFO = 0xE,
+        MX = 0xF,
+        TXT = 0x10,
+        RP = 0x11,
+        AFSDB = 0x12,
+        X25 = 0x13,
+        ISDN = 0x14,
+        RT = 0x15,
+        SIG = 0x18,
+        KEY = 0x19,
+        AAAA = 0x1C,
+        LOC = 0x1D,
+        NXT = 0x1E,
+        SRV = 0x21,
+        ATMA = 0x22,
+        NAPTR = 0x23,
+        DNAME = 0x27,
+        DS = 0x2B,
+        RRSIG = 0x2E,
+        NSEC = 0x2F,
+        DNSKEY = 0x30,
+        DHCID = 0x31,
+        NSEC3 = 0x32,
         NSEC3PARAM = 0x33,
-        TLSA    = 0x34,
-        ALL     = 0xFF,
-        WINS    = 0xFF01,
-        WINSR   = 0xFF02
+        TLSA = 0x34,
+        ALL = 0xFF,
+        WINS = 0xFF01,
+        WINSR = 0xFF02
     }
 
     [StructLayout(LayoutKind.Explicit)]
@@ -198,12 +194,13 @@ namespace HEXEH.Core.Helper.Windows
 
         [FieldOffset(14)]
         public ushort wAddress7;
-        
-        public ushort[] Words { 
-            get 
+
+        public ushort[] Words
+        {
+            get
             {
-                return new ushort[] { wAddress0 , wAddress1 , wAddress2 , wAddress3 , wAddress4 , wAddress5 , wAddress6 , wAddress7 };
-            } 
+                return new ushort[] { wAddress0, wAddress1, wAddress2, wAddress3, wAddress4, wAddress5, wAddress6, wAddress7 };
+            }
             set
             {
                 wAddress0 = value[0];
@@ -360,7 +357,7 @@ namespace HEXEH.Core.Helper.Windows
         public ushort wWeight;
         public ushort wPort;
         public NAME nameTarget;
-        
+
         public override string ToString()
         {
             return $"({wPriority})({wWeight})({wPort}) {nameTarget}";
@@ -533,7 +530,7 @@ namespace HEXEH.Core.Helper.Windows
             pNativeData += 2;
             var nameMarshaler = new DnsNameMarshaler();
             obj.nameTarget = (NAME)nameMarshaler.MarshalNativeToManaged(pNativeData);
-            
+
             return obj;
         }
     }

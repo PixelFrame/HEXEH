@@ -1,10 +1,5 @@
 ﻿using HEXEH.Core.Utility;
-using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Runtime.InteropServices;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace HEXEH.Core.Helper.Windows
 {
@@ -38,7 +33,7 @@ namespace HEXEH.Core.Helper.Windows
             nodes[5] = new DataTreeNode("SerialNumber", record.SerialNumber.ToString());
             nodes[6] = new DataTreeNode("TTL", record.TTL.ToString());
             nodes[7] = new DataTreeNode("Reserved", record.Reserved.ToString());
-            nodes[8] = new DataTreeNode("Timestamp", (new DateTime(1601,1,1)).AddHours(record.Timestamp).ToString());
+            nodes[8] = new DataTreeNode("Timestamp", (new DateTime(1601, 1, 1)).AddHours(record.Timestamp).ToString());
             nodes[9] = DNSRR.ToDataTreeNode(record.RecordData, record.Type);
             return nodes;
         }

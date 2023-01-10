@@ -1,10 +1,5 @@
 ﻿using HEXEH.Core.Helper.Windows.Common;
-using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Runtime.InteropServices;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace HEXEH.Core.DataType
 {
@@ -18,7 +13,7 @@ namespace HEXEH.Core.DataType
         private byte[] _blob = Array.Empty<byte>();
         public byte[] Blob
         {
-            get=> _blob;
+            get => _blob;
             set
             {
                 _blob = value;
@@ -45,7 +40,7 @@ namespace HEXEH.Core.DataType
                 var dfsMarshaler = new DFSNamespaceMarshaler();
                 _dfsNamespace = (DFSNamespace)dfsMarshaler.MarshalNativeToManaged(handle.AddrOfPinnedObject());
             }
-            catch(Exception ex)
+            catch (Exception ex)
             {
                 throw new InvalidDataException("Blob provided cannot be set converted to PKT structure", ex);
             }

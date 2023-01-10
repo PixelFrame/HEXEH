@@ -1,10 +1,4 @@
 ﻿using HEXEH.Core.Helper.Windows;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Runtime.InteropServices;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace HEXEH.Core.DataType
 {
@@ -30,7 +24,7 @@ namespace HEXEH.Core.DataType
         {
             var dt = new DataTree(Name, Description);
             dt.Head.Childs.AddRange(DNS_RECORD.ToDataTreeNodes(Blob));
-            
+
             return dt;
         }
     }

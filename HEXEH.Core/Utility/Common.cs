@@ -1,9 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Text.RegularExpressions;
-using System.Threading.Tasks;
+﻿using System.Text.RegularExpressions;
 
 namespace HEXEH.Core.Utility
 {
@@ -20,7 +15,7 @@ namespace HEXEH.Core.Utility
             {
                 var halflen = strBlob.Length >> 1;
                 var arr = new byte[halflen];
-                for(int i = 0; i < halflen; i++)
+                for (int i = 0; i < halflen; i++)
                 {
                     res[i] = (byte)((GetHexVal(strBlob[i << 1]) << 4) + GetHexVal(strBlob[(i << 1) + 1]));
                 }

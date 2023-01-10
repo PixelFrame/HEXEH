@@ -1,9 +1,4 @@
 ﻿using HEXEH.Core.Helper.Windows;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace HEXEH.Core.DataType
 {
@@ -18,7 +13,7 @@ namespace HEXEH.Core.DataType
         private DNSType _type = 0;
         public byte[] Blob { get; set; } = Array.Empty<byte>();
 
-        public static DNS ConvertFromBytes(byte[] blob, Dictionary<string,object>? settingMap)
+        public static DNS ConvertFromBytes(byte[] blob, Dictionary<string, object>? settingMap)
         {
             var dns = new DNS();
             dns.Blob = blob;

@@ -1,10 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
-using System.Runtime.InteropServices;
-using System.Text;
-using System.Threading.Tasks;
+﻿using System.Runtime.InteropServices;
 
 namespace HEXEH.Core.DataType
 {
@@ -19,7 +13,7 @@ namespace HEXEH.Core.DataType
         public byte[] Blob
         {
             get { return _blob; }
-            set 
+            set
             {
                 _blob = value;
                 var handle = GCHandle.Alloc(Blob, GCHandleType.Pinned);
